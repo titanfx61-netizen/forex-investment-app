@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Profile - TITAN FX TRADING</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        .gradient-bg { background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); }
+        .gold-gradient { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); }
+        .glass-card {
+            background: rgba(30, 41, 59, 0.8);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(245, 158, 11, 0.15);
+        }
+        .sidebar { background: rgba(15, 23, 42, 0.95); }
+        .nav-item { transition: all 0.3s ease; }
+        .nav-item:hover, .nav-item.active { background: rgba(245, 158, 11, 0.15); border-right: 3px solid #f59e0b; color: white; }
+        .input-dark { background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(245, 158, 11, 0.3); transition: all 0.3s ease; }
+        .input-dark:focus { border-color: #f59e0b; box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.1); outline: none; }
+        .profile-pic-container {
+            position: relative;
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            overflow: hidden;
+            border: 4px solid rgba(245, 158, 11, 0.3);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .profile-pic-container:hover {
+            border-color: #f59e0b;
+            transform: scale(1.05);
+        }
+        .profile-pic-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .profile-pic-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .profile-pic-container:hover .profile-pic-overlay {
+            opacity: 1;
+        }
+        .copy-btn {
+            transition: all 0.2s ease;
+        }
+        .copy-btn:hover {
+            transform: scale(1.05);
+        }
+        .copy-btn:active {
+            transform: scale(0.95);
+        }
+    </style>
+</head>
+<body class="gradient-bg min-h-screen text-slate-200">
+    <div class="flex min-h-screen">
+        <!-- Desktop Sidebar -->
+        <aside class="sidebar w-64 fixed h-full hidden lg:block border-r border-slate-700/50 z-20">
+            <div class="p-6">
+                <h1 class="text-2xl font-bold text-white">
+                    <span class="text-amber-500">TITAN FX</span>
+                </h1>
+                <p class="text-slate-500 text-xs mt-1 tracking-wider">TRADING</p>
+            </div>
+            <nav class="mt-6 space-y-1">
+                <a href="dashboard.html" class="nav-item flex items-center px-6 py-3 text-slate-400 hover:text-white">
+                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+                    Dashboard
+                </a>
+                <a href="deposit.html" class="nav-item flex items-center px-6 py-3 text-slate-400 hover:text-white">
+                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    Deposit
+                </a>
+                <a href="withdraw.html" class="nav-item flex items-center px-6 py-3 text-slate-400 hover:text-white">
+                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+                    Withdraw
+                </a>
+                <a href="transactions.html" class="nav-item flex items-center px-6 py-3 text-slate-400 hover:text-white">
+                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+                    Transactions
+                </a>
+                <a href="kyc.html" class="nav-item flex items-center px-6 py-3 text-slate-400 hover:text-white">
+                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2"/></svg>
+                    KYC Verification
+                </a>
+                <a href="profile.html" class="nav-item active flex items-center px-6 py-3 text-white">
+                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                    Edit Profile
+                </a>
+            </nav>
+            <div class="absolute bottom-0 w-full p-4 border-t border-slate-700/50">
+                <button onclick="logout()" class="w-full flex items-center px-4 py-3 text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-xl transition-all">
+                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+                    Logout
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 lg:ml-64 w-full">
+            <header class="glass-card sticky top-0 z-10 px-6 py-4 flex items-center justify-between border-b border-slate-700/50">
+                <div>
+                    <h2 class="text-xl font-semibold text-white">Edit Profile</h2>
+                    <p class="text-slate-400 text-sm">Update your account information</p>
+                </div>
+                <div class="w-10 h-10 rounded-full gold-gradient flex items-center justify-center text-white font-bold shadow-lg" id="userAvatar">U</div>
+            </header>
+
+            <div class="p-4 md:p-8 max-w-4xl mx-auto">
+                <!-- Success/Error Messages -->
+                <div id="successMsg" class="hidden mb-6 p-4 bg-green-500/20 border border-green-500/50 rounded-xl text-green-300 text-center"></div>
+                <div id="errorMsg" class="hidden mb-6 p-4 bg-red-500/20 border border-red-500/50 rounded-xl text-red-300 text-center"></div>
+
+                <!-- Profile Picture Section -->
+                <div class="glass-card rounded-2xl p-8 shadow-2xl mb-6">
+                    <h3 class="text-xl font-bold text-white mb-6">Profile Picture</h3>
+                    
+                    <div class="flex flex-col items-center">
+                        <div class="profile-pic-container" onclick="document.getElementById('profilePicInput').click()">
+                            <img id="profilePicPreview" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%2364748b' viewBox='0 0 24 24'%3E%3Cpath d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z'/%3E%3C/svg%3E" alt="Profile Picture">
+                            <div class="profile-pic-overlay">
+                                <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                </svg>
+                            </div>
+                        </div>
+                        <input type="file" id="profilePicInput" accept="image/*" class="hidden">
+                        <p class="text-slate-400 text-sm mt-4">Click on the picture to change it</p>
+                        <p class="text-slate-500 text-xs mt-1">JPG, PNG or GIF (Max 2MB)</p>
+                        
+                        <div id="uploadProgress" class="hidden w-full max-w-xs mt-4">
+                            <div class="bg-slate-700 rounded-full h-2">
+                                <div id="progressBar" class="gold-gradient h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
+                            </div>
+                            <p id="progressText" class="text-slate-400 text-xs text-center mt-2">Uploading...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Referral Program Section -->
+                <div class="glass-card rounded-2xl p-8 shadow-2xl mb-6 border-2 border-amber-500/30">
+                    <div class="flex items-center justify-between mb-6">
+                        <h3 class="text-xl font-bold text-white flex items-center gap-2">
+                            <svg class="w-6 h-6 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                            Referral Program
+                        </h3>
+                        <span class="px-3 py-1 rounded-full text-xs font-bold bg-green-500/20 text-green-400">EARN $10 PER REFERRAL</span>
+                    </div>
+                    
+                    <!-- Referral Stats -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                        <div class="bg-slate-800/50 rounded-xl p-5 border border-slate-700/50">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-slate-400 text-sm">Total Earnings</span>
+                                <svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"/></svg>
+                            </div>
+                            <p class="text-3xl font-bold text-green-400" id="referralEarnings">$0.00</p>
+                        </div>
+                        <div class="bg-slate-800/50 rounded-xl p-5 border border-slate-700/50">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-slate-400 text-sm">People Referred</span>
+                                <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+                            </div>
+                            <p class="text-3xl font-bold text-blue-400" id="referralCount">0</p>
+                        </div>
+                    </div>
+
+                    <!-- Referral Code -->
+                    <div class="mb-6">
+                        <label class="block text-sm font-medium text-slate-300 mb-2">Your Referral Code</label>
+                        <div class="flex gap-2">
+                            <input type="text" id="referralCodeDisplay" readonly class="input-dark flex-1 px-4 py-3 rounded-xl text-amber-500 font-bold text-lg tracking-wider cursor-pointer" value="GENERATING...">
+                            <button onclick="copyReferralCode()" class="copy-btn px-6 py-3 bg-amber-500 hover:bg-amber-600 text-white font-semibold rounded-xl transition-all flex items-center gap-2">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                                Copy
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Referral Link -->
+                    <div class="mb-6">
+                        <label class="block text-sm font-medium text-slate-300 mb-2">Your Referral Link</label>
+                        <div class="flex gap-2">
+                            <input type="text" id="referralLinkDisplay" readonly class="input-dark flex-1 px-4 py-3 rounded-xl text-slate-300 text-sm font-mono cursor-pointer" value="Generating link...">
+                            <button onclick="copyReferralLink()" class="copy-btn px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-xl transition-all flex items-center gap-2">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
+                                Copy Link
+                            </button>
+                        </div>
+                        <p class="text-xs text-slate-500 mt-2">Share this link with friends. When they sign up, you'll earn $10!</p>
+                    </div>
+
+                    <!-- How It Works -->
+                    <div class="bg-gradient-to-r from-amber-500/10 to-orange-500/10 rounded-xl p-5 border border-amber-500/20">
+                        <h4 class="text-white font-semibold mb-3 flex items-center gap-2">
+                            <svg class="w-5 h-5 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                            How It Works
+                        </h4>
+                        <div class="space-y-2 text-sm text-slate-300">
+                            <div class="flex items-start gap-2">
+                                <span class="text-amber-500 font-bold">1.</span>
+                                <span>Share your referral link or code with friends</span>
+                            </div>
+                            <div class="flex items-start gap-2">
+                                <span class="text-amber-500 font-bold">2.</span>
+                                <span>They sign up using your link and get a $10 welcome bonus</span>
+                            </div>
+                            <div class="flex items-start gap-2">
+                                <span class="text-amber-500 font-bold">3.</span>
+                                <span>You earn $10 commission instantly added to your balance</span>
+                            </div>
+                            <div class="flex items-start gap-2">
+                                <span class="text-amber-500 font-bold">4.</span>
+                                <span>No limit on how many people you can refer!</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Profile Information -->
+                <div class="glass-card rounded-2xl p-8 shadow-2xl mb-6">
+                    <h3 class="text-xl font-bold text-white mb-6">Personal Information</h3>
+                    
+                    <form id="profileForm" class="space-y-5">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                            <div>
+                                <label class="block text-sm font-medium text-slate-300 mb-2">First Name</label>
+                                <input type="text" id="firstName" required class="input-dark w-full px-4 py-3 rounded-xl text-white placeholder-slate-500">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-slate-300 mb-2">Last Name</label>
+                                <input type="text" id="lastName" required class="input-dark w-full px-4 py-3 rounded-xl text-white placeholder-slate-500">
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                            <div>
+                                <label class="block text-sm font-medium text-slate-300 mb-2">Username</label>
+                                <input type="text" id="username" class="input-dark w-full px-4 py-3 rounded-xl text-white placeholder-slate-500" placeholder="Choose a username">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-slate-300 mb-2">Phone Number</label>
+                                <input type="tel" id="phoneNumber" class="input-dark w-full px-4 py-3 rounded-xl text-white placeholder-slate-500" placeholder="+1 234 567 8900">
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                            <div>
+                                <label class="block text-sm font-medium text-slate-300 mb-2">Date of Birth</label>
+                                <input type="date" id="dateOfBirth" class="input-dark w-full px-4 py-3 rounded-xl text-white placeholder-slate-500">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-slate-300 mb-2">Gender</label>
+                                <select id="gender" class="input-dark w-full px-4 py-3 rounded-xl text-white">
+                                    <option value="" class="bg-slate-800">Select gender</option>
+                                    <option value="male" class="bg-slate-800">Male</option>
+                                    <option value="female" class="bg-slate-800">Female</option>
+                                    <option value="other" class="bg-slate-800">Other</option>
+                                    <option value="prefer_not_to_say" class="bg-slate-800">Prefer not to say</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-slate-300 mb-2">Country of Residence</label>
+                            <select id="country" class="input-dark w-full px-4 py-3 rounded-xl text-white">
+                                <option value="" class="bg-slate-800">Select country</option>
+                                <option value="United States" class="bg-slate-800">United States</option>
+                                <option value="United Kingdom" class="bg-slate-800">United Kingdom</option>
+                                <option value="Canada" class="bg-slate-800">Canada</option>
+                                <option value="Australia" class="bg-slate-800">Australia</option>
+                                <option value="Germany" class="bg-slate-800">Germany</option>
+                                <option value="France" class="bg-slate-800">France</option>
+                                <option value="Japan" class="bg-slate-800">Japan</option>
+                                <option value="China" class="bg-slate-800">China</option>
+                                <option value="India" class="bg-slate-800">India</option>
+                                <option value="Brazil" class="bg-slate-800">Brazil</option>
+                                <option value="South Africa" class="bg-slate-800">South Africa</option>
+                                <option value="Nigeria" class="bg-slate-800">Nigeria</option>
+                                <option value="Kenya" class="bg-slate-800">Kenya</option>
+                                <option value="Egypt" class="bg-slate-800">Egypt</option>
+                                <option value="UAE" class="bg-slate-800">United Arab Emirates</option>
+                                <option value="Singapore" class="bg-slate-800">Singapore</option>
+                                <option value="Other" class="bg-slate-800">Other</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-slate-300 mb-2">Email Address</label>
+                            <input type="email" id="email" disabled class="input-dark w-full px-4 py-3 rounded-xl text-slate-400 cursor-not-allowed opacity-60">
+                            <p class="text-xs text-slate-500 mt-1">Email cannot be changed for security reasons</p>
+                        </div>
+
+                        <button type="submit" id="updateBtn" class="w-full gold-gradient text-white font-semibold py-3 rounded-xl hover:opacity-90 transition-all duration-300 shadow-lg flex items-center justify-center">
+                            <span id="updateText">Save Profile Changes</span>
+                            <svg id="updateSpinner" class="hidden animate-spin ml-2 w-5 h-5" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Change Password -->
+                <div class="glass-card rounded-2xl p-8 shadow-2xl">
+                    <h3 class="text-xl font-bold text-white mb-6">Change Password</h3>
+                    
+                    <form id="passwordForm" class="space-y-5">
+                        <div>
+                            <label class="block text-sm font-medium text-slate-300 mb-2">Current Password</label>
+                            <input type="password" id="currentPassword" required class="input-dark w-full px-4 py-3 rounded-xl text-white placeholder-slate-500" placeholder="Enter current password">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-300 mb-2">New Password</label>
+                            <input type="password" id="newPassword" required minlength="6" class="input-dark w-full px-4 py-3 rounded-xl text-white placeholder-slate-500" placeholder="Min. 6 characters">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-300 mb-2">Confirm New Password</label>
+                            <input type="password" id="confirmNewPassword" required class="input-dark w-full px-4 py-3 rounded-xl text-white placeholder-slate-500" placeholder="Re-enter new password">
+                        </div>
+
+                        <button type="submit" id="passwordBtn" class="w-full gold-gradient text-white font-semibold py-3 rounded-xl hover:opacity-90 transition-all duration-300 shadow-lg flex items-center justify-center">
+                            <span id="passwordText">Change Password</span>
+                            <svg id="passwordSpinner" class="hidden animate-spin ml-2 w-5 h-5" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const SUPABASE_URL = 'https://gicamioeiitrfwhtvqxv.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdpY2FtaW9laWl0cmZ3aHR2cXh2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA4NDc3NzEsImV4cCI6MjA5NjQyMzc3MX0.YD0A85STez01eTGi5szOlKmY2DwdZev_-3KVxUuoz8U';
+        const mySupabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        
+        let currentUser = null;
+        let profilePictureFile = null;
+        let userReferralCode = null;
+
+        async function init() {
+            const { data: { session } } = await mySupabase.auth.getSession();
+            if (!session) {
+                window.location.href = 'sign-in.html';
+                return;
+            }
+            currentUser = session.user;
+            document.getElementById('userAvatar').textContent = (currentUser.email[0] || 'U').toUpperCase();
+            document.getElementById('email').value = currentUser.email;
+            
+            // Load profile data
+            const { data: profile } = await mySupabase.from('users').select('*').eq('id', currentUser.id).single();
+            
+            if (profile) {
+                document.getElementById('firstName').value = profile.first_name || '';
+                document.getElementById('lastName').value = profile.last_name || '';
+                document.getElementById('username').value = profile.username || '';
+                document.getElementById('phoneNumber').value = profile.phone_number || '';
+                document.getElementById('dateOfBirth').value = profile.date_of_birth || '';
+                document.getElementById('gender').value = profile.gender || '';
+                document.getElementById('country').value = profile.country || '';
+                
+                // Load referral data
+                userReferralCode = profile.referral_code || 'NO CODE';
+                document.getElementById('referralCodeDisplay').value = userReferralCode;
+                document.getElementById('referralEarnings').textContent = `$${(profile.referral_earnings || 0).toFixed(2)}`;
+                
+                // Generate referral link
+                const baseUrl = window.location.origin + window.location.pathname.replace('profile.html', 'signup.html');
+                const referralLink = `${baseUrl}?ref=${userReferralCode}`;
+                document.getElementById('referralLinkDisplay').value = referralLink;
+                
+                // Load referral count
+                const { count } = await mySupabase
+                    .from('referrals')
+                    .select('*', { count: 'exact', head: true })
+                    .eq('referrer_id', currentUser.id);
+                
+                document.getElementById('referralCount').textContent = count || 0;
+                
+                // Load profile picture if exists
+                if (profile.profile_picture_url) {
+                    const { data: imageData } = mySupabase.storage.from('profile-pictures').getPublicUrl(profile.profile_picture_url);
+                    if (imageData) {
+                        document.getElementById('profilePicPreview').src = imageData.publicUrl;
+                    }
+                }
+            }
+        }
+        init();
+
+        // Copy referral code to clipboard
+        async function copyReferralCode() {
+            const code = document.getElementById('referralCodeDisplay').value;
+            try {
+                await navigator.clipboard.writeText(code);
+                showSuccess('Referral code copied to clipboard!');
+                setTimeout(() => hideMessages(), 2000);
+            } catch (err) {
+                console.error('Failed to copy:', err);
+                showError('Failed to copy code. Please try again.');
+            }
+        }
+
+        // Copy referral link to clipboard
+        async function copyReferralLink() {
+            const link = document.getElementById('referralLinkDisplay').value;
+            try {
+                await navigator.clipboard.writeText(link);
+                showSuccess('Referral link copied to clipboard! Share it with your friends.');
+                setTimeout(() => hideMessages(), 2000);
+            } catch (err) {
+                console.error('Failed to copy:', err);
+                showError('Failed to copy link. Please try again.');
+            }
+        }
+
+        // Profile Picture Upload
+        document.getElementById('profilePicInput').addEventListener('change', async function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            if (file.size > 2 * 1024 * 1024) {
+                showError('File size must be less than 2MB');
+                return;
+            }
+
+            if (!file.type.startsWith('image/')) {
+                showError('Please select an image file');
+                return;
+            }
+
+            profilePictureFile = file;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('profilePicPreview').src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+
+            showSuccess('Profile picture selected. Click "Save Profile Changes" to upload.');
+        });
+
+        // Update Profile
+        document.getElementById('profileForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const firstName = document.getElementById('firstName').value.trim();
+            const lastName = document.getElementById('lastName').value.trim();
+            const username = document.getElementById('username').value.trim();
+            const phoneNumber = document.getElementById('phoneNumber').value.trim();
+            const dateOfBirth = document.getElementById('dateOfBirth').value;
+            const gender = document.getElementById('gender').value;
+            const country = document.getElementById('country').value;
+
+            setLoading('update', true);
+            hideMessages();
+
+            try {
+                let profilePictureUrl = null;
+
+                if (profilePictureFile) {
+                    const uploadProgress = document.getElementById('uploadProgress');
+                    const progressBar = document.getElementById('progressBar');
+                    const progressText = document.getElementById('progressText');
+                    
+                    uploadProgress.classList.remove('hidden');
+                    progressBar.style.width = '30%';
+                    progressText.textContent = 'Uploading image...';
+
+                    const fileExt = profilePictureFile.name.split('.').pop();
+                    const fileName = `${currentUser.id}/profile.${fileExt}`;
+                    
+                    const { data: existingFiles } = await mySupabase.storage.from('profile-pictures').list(currentUser.id);
+                    if (existingFiles && existingFiles.length > 0) {
+                        await mySupabase.storage.from('profile-pictures').remove(
+                            existingFiles.map(f => `${currentUser.id}/${f.name}`)
+                        );
+                    }
+
+                    const { data: uploadData, error: uploadError } = await mySupabase.storage
+                        .from('profile-pictures')
+                        .upload(fileName, profilePictureFile, { upsert: true });
+
+                    if (uploadError) throw uploadError;
+
+                    progressBar.style.width = '70%';
+                    progressText.textContent = 'Processing...';
+                    profilePictureUrl = fileName;
+                }
+
+                const updateData = {
+                    first_name: firstName,
+                    last_name: lastName,
+                    full_name: `${firstName} ${lastName}`,
+                    username: username,
+                    phone_number: phoneNumber,
+                    date_of_birth: dateOfBirth,
+                    gender: gender,
+                    country: country
+                };
+
+                if (profilePictureUrl) {
+                    updateData.profile_picture_url = profilePictureUrl;
+                }
+
+                const { error } = await mySupabase
+                    .from('users')
+                    .update(updateData)
+                    .eq('id', currentUser.id);
+
+                if (error) throw error;
+
+                if (profilePictureFile) {
+                    profilePictureFile = null;
+                    document.getElementById('profilePicInput').value = '';
+                }
+
+                showSuccess('Profile updated successfully!');
+                
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1500);
+            } catch (err) {
+                console.error('Profile update error:', err);
+                showError('Failed to update profile. Please try again.');
+            } finally {
+                setLoading('update', false);
+                document.getElementById('uploadProgress').classList.add('hidden');
+            }
+        });
+
+        // Change Password
+        document.getElementById('passwordForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const currentPassword = document.getElementById('currentPassword').value;
+            const newPassword = document.getElementById('newPassword').value;
+            const confirmNewPassword = document.getElementById('confirmNewPassword').value;
+
+            if (newPassword !== confirmNewPassword) {
+                showError('New passwords do not match!');
+                return;
+            }
+
+            if (newPassword.length < 6) {
+                showError('New password must be at least 6 characters!');
+                return;
+            }
+
+            setLoading('password', true);
+            hideMessages();
+
+            try {
+                const { error: verifyError } = await mySupabase.auth.signInWithPassword({
+                    email: currentUser.email,
+                    password: currentPassword
+                });
+
+                if (verifyError) {
+                    showError('Current password is incorrect!');
+                    setLoading('password', false);
+                    return;
+                }
+
+                await mySupabase.auth.signOut();
+
+                const { error: updateError } = await mySupabase.auth.updateUser({
+                    password: newPassword
+                });
+
+                if (updateError) throw updateError;
+
+                showSuccess('Password changed successfully! Please sign in again.');
+                document.getElementById('passwordForm').reset();
+                
+                setTimeout(() => {
+                    window.location.href = 'sign-in.html';
+                }, 2000);
+            } catch (err) {
+                console.error('Password change error:', err);
+                showError('Failed to change password. Please try again.');
+            } finally {
+                setLoading('password', false);
+            }
+        });
+
+        function setLoading(type, isLoading) {
+            const btn = document.getElementById(type === 'update' ? 'updateBtn' : 'passwordBtn');
+            const text = document.getElementById(type === 'update' ? 'updateText' : 'passwordText');
+            const spinner = document.getElementById(type === 'update' ? 'updateSpinner' : 'passwordSpinner');
+            
+            if (isLoading) {
+                text.textContent = 'Processing...';
+                spinner.classList.remove('hidden');
+                btn.disabled = true;
+                btn.classList.add('opacity-75', 'cursor-not-allowed');
+            } else {
+                text.textContent = type === 'update' ? 'Save Profile Changes' : 'Change Password';
+                spinner.classList.add('hidden');
+                btn.disabled = false;
+                btn.classList.remove('opacity-75', 'cursor-not-allowed');
+            }
+        }
+
+        function showSuccess(msg) {
+            const el = document.getElementById('successMsg');
+            el.textContent = msg;
+            el.classList.remove('hidden');
+        }
+
+        function showError(msg) {
+            const el = document.getElementById('errorMsg');
+            el.textContent = msg;
+            el.classList.remove('hidden');
+        }
+
+        function hideMessages() {
+            document.getElementById('successMsg').classList.add('hidden');
+            document.getElementById('errorMsg').classList.add('hidden');
+        }
+
+        async function logout() {
+            await mySupabase.auth.signOut();
+            window.location.href = 'sign-in.html';
+        }
+    </script>
+</body>
+</html>
