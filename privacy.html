@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Privacy Policy - TITAN FX TRADING</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        .gradient-bg { background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); }
+        .gold-gradient { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); }
+        .glass-card { background: rgba(30, 41, 59, 0.8); backdrop-filter: blur(20px); border: 1px solid rgba(245, 158, 11, 0.15); }
+        .sidebar { background: rgba(15, 23, 42, 0.95); }
+        .nav-item { transition: all 0.3s ease; }
+        .nav-item:hover, .nav-item.active { background: rgba(245, 158, 11, 0.15); border-right: 3px solid #f59e0b; color: white; }
+        
+        /* Custom Scrollbar for readability */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: rgba(15, 23, 42, 0.5); }
+        ::-webkit-scrollbar-thumb { background: rgba(245, 158, 11, 0.5); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(245, 158, 11, 0.8); }
+
+        .policy-section { margin-bottom: 2rem; }
+        .policy-section h2 { color: #f59e0b; font-size: 1.25rem; font-weight: 600; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.5rem; }
+        .policy-section p, .policy-section li { color: #cbd5e1; line-height: 1.7; margin-bottom: 0.75rem; }
+        .policy-section ul { list-style-type: disc; padding-left: 1.5rem; margin-bottom: 1rem; }
+    </style>
+</head>
+<body class="gradient-bg min-h-screen text-slate-200">
+    <div class="flex min-h-screen">
+        <!-- Desktop Sidebar -->
+        <aside class="sidebar w-64 fixed h-full hidden lg:block border-r border-slate-700/50 z-20">
+            <div class="p-6">
+                <h1 class="text-2xl font-bold text-white"><span class="text-amber-500">TITAN FX</span></h1>
+                <p class="text-slate-500 text-xs mt-1 tracking-wider">TRADING</p>
+            </div>
+            <nav class="mt-6 space-y-1">
+                <a href="dashboard.html" class="nav-item flex items-center px-6 py-3 text-slate-400 hover:text-white">
+                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+                    Dashboard
+                </a>
+                <a href="trading-bots.html" class="nav-item flex items-center px-6 py-3 text-slate-400 hover:text-white">
+                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
+                    Trading Bots
+                </a>
+                <a href="investments.html" class="nav-item flex items-center px-6 py-3 text-slate-400 hover:text-white">
+                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+                    Investments
+                </a>
+                <a href="deposit.html" class="nav-item flex items-center px-6 py-3 text-slate-400 hover:text-white">
+                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    Deposit
+                </a>
+                <a href="withdraw.html" class="nav-item flex items-center px-6 py-3 text-slate-400 hover:text-white">
+                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+                    Withdraw
+                </a>
+                <a href="profile.html" class="nav-item flex items-center px-6 py-3 text-slate-400 hover:text-white">
+                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                    Edit Profile
+                </a>
+                <a href="privacy.html" class="nav-item active flex items-center px-6 py-3 text-white">
+                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+                    Privacy Policy
+                </a>
+            </nav>
+            <div class="absolute bottom-0 w-full p-4 border-t border-slate-700/50">
+                <button onclick="logout()" class="w-full flex items-center px-4 py-3 text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-xl transition-all">
+                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+                    Logout
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 lg:ml-64 w-full">
+            <header class="glass-card sticky top-0 z-10 px-6 py-4 flex items-center justify-between border-b border-slate-700/50">
+                <div class="flex items-center gap-4">
+                    <button class="lg:hidden text-white" onclick="toggleSidebar()">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+                    </button>
+                    <div>
+                        <h2 class="text-xl font-semibold text-white">Privacy Policy</h2>
+                        <p class="text-slate-400 text-xs">Last Updated: July 2024</p>
+                    </div>
+                </div>
+                <a href="dashboard.html" class="text-amber-500 hover:text-amber-400 text-sm font-medium flex items-center gap-1">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+                    Back to Dashboard
+                </a>
+            </header>
+
+            <div class="p-4 md:p-8 max-w-4xl mx-auto">
+                <div class="glass-card rounded-2xl p-6 md:p-8 shadow-2xl">
+                    <div class="mb-8 border-b border-slate-700/50 pb-6">
+                        <h1 class="text-3xl font-bold text-white mb-4">Privacy Policy</h1>
+                        <p class="text-slate-400">
+                            At TITAN FX TRADING, we are committed to protecting your privacy and ensuring the security of your personal and financial information. This Privacy Policy explains how we collect, use, disclose, and safeguard your data when you use our platform, automated trading bots, and investment services.
+                        </p>
+                    </div>
+
+                    <div class="policy-section">
+                        <h2>
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                            1. Information We Collect
+                        </h2>
+                        <p>We collect information to provide and improve our trading services. This includes:</p>
+                        <ul>
+                            <li><strong>Personal Information:</strong> Name, email address, phone number, and country of residence provided during registration and KYC verification.</li>
+                            <li><strong>Financial Information:</strong> Cryptocurrency wallet addresses, bank account details (for wire transfers), and transaction history.</li>
+                            <li><strong>Trading Credentials:</strong> MetaTrader 5 (MT5) login credentials, account numbers, and server details provided to connect our automated bots to your trading account. <em class="text-amber-500">These are encrypted and stored securely.</em></li>
+                            <li><strong>Technical Data:</strong> IP address, browser type, device information, and usage logs to ensure platform security and prevent fraud.</li>
+                        </ul>
+                    </div>
+
+                    <div class="policy-section">
+                        <h2>
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                            2. How We Use Your Information
+                        </h2>
+                        <p>Your data is used strictly for the following purposes:</p>
+                        <ul>
+                            <li>To create, manage, and verify your trading account.</li>
+                            <li>To execute automated trading strategies via connected MT5 accounts.</li>
+                            <li>To process deposits, withdrawals, and calculate investment returns.</li>
+                            <li>To communicate important updates, security alerts, and platform notifications.</li>
+                            <li>To comply with legal obligations and prevent fraudulent activities.</li>
+                        </ul>
+                    </div>
+
+                    <div class="policy-section">
+                        <h2>
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+                            3. Data Security
+                        </h2>
+                        <p>
+                            We implement industry-standard security measures to protect your data. All sensitive information, including MT5 credentials and financial details, is encrypted in transit and at rest. We utilize secure database infrastructure (Supabase) and regularly audit our systems for vulnerabilities. However, no method of transmission over the Internet is 100% secure, and we cannot guarantee absolute security.
+                        </p>
+                    </div>
+
+                    <div class="policy-section">
+                        <h2>
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
+                            4. Third-Party Services
+                        </h2>
+                        <p>
+                            We may share minimal necessary data with trusted third-party providers to operate our platform, such as:
+                        </p>
+                        <ul>
+                            <li><strong>Database & Authentication:</strong> Supabase for secure data storage and user management.</li>
+                            <li><strong>Market Data:</strong> TradingView for live charting and market analysis.</li>
+                            <li><strong>Payment Processors:</strong> Blockchain networks and banking partners for processing deposits and withdrawals.</li>
+                        </ul>
+                        <p>We do not sell, rent, or trade your personal information to external marketers or unauthorized third parties.</p>
+                    </div>
+
+                    <div class="policy-section">
+                        <h2>
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                            5. Your Rights
+                        </h2>
+                        <p>Depending on your jurisdiction, you have the right to:</p>
+                        <ul>
+                            <li>Access the personal data we hold about you.</li>
+                            <li>Request correction of inaccurate or incomplete data.</li>
+                            <li>Request deletion of your account and associated data (subject to legal retention requirements for financial records).</li>
+                            <li>Withdraw consent for optional data processing at any time.</li>
+                        </ul>
+                        <p>To exercise these rights, please contact our support team via the platform.</p>
+                    </div>
+
+                    <div class="policy-section">
+                        <h2>
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                            6. Contact Us
+                        </h2>
+                        <p>
+                            If you have any questions, concerns, or requests regarding this Privacy Policy or our data practices, please contact us through the <a href="support.html" class="text-amber-500 hover:text-amber-400 underline">Support Center</a> within your dashboard.
+                        </p>
+                    </div>
+
+                    <div class="mt-8 pt-6 border-t border-slate-700/50 text-center">
+                        <p class="text-slate-500 text-sm">
+                            By using the TITAN FX TRADING platform, you acknowledge that you have read and understood this Privacy Policy.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Mobile Sidebar Overlay -->
+    <div id="mobileSidebar" class="fixed inset-0 z-50 hidden lg:hidden">
+        <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" onclick="toggleSidebar()"></div>
+        <aside class="sidebar absolute left-0 top-0 h-full w-64 border-r border-slate-700/50 transform transition-transform duration-300">
+            <div class="p-6 flex justify-between items-center">
+                <h1 class="text-2xl font-bold text-white"><span class="text-amber-500">TITAN FX</span></h1>
+                <button onclick="toggleSidebar()" class="text-slate-400 hover:text-white">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+            <nav class="mt-6 space-y-1">
+                <a href="dashboard.html" class="nav-item flex items-center px-6 py-3 text-slate-400 hover:text-white">
+                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+                    Dashboard
+                </a>
+                <a href="trading-bots.html" class="nav-item flex items-center px-6 py-3 text-slate-400 hover:text-white">
+                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
+                    Trading Bots
+                </a>
+                <a href="investments.html" class="nav-item flex items-center px-6 py-3 text-slate-400 hover:text-white">
+                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+                    Investments
+                </a>
+                <a href="deposit.html" class="nav-item flex items-center px-6 py-3 text-slate-400 hover:text-white">
+                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    Deposit
+                </a>
+                <a href="withdraw.html" class="nav-item flex items-center px-6 py-3 text-slate-400 hover:text-white">
+                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+                    Withdraw
+                </a>
+                <a href="profile.html" class="nav-item flex items-center px-6 py-3 text-slate-400 hover:text-white">
+                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                    Edit Profile
+                </a>
+                <a href="privacy.html" class="nav-item active flex items-center px-6 py-3 text-white">
+                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+                    Privacy Policy
+                </a>
+            </nav>
+            <div class="absolute bottom-0 w-full p-4 border-t border-slate-700/50">
+                <button onclick="logout()" class="w-full flex items-center px-4 py-3 text-red-400 hover:bg-red-500/10 rounded-xl">
+                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+                    Logout
+                </button>
+            </div>
+        </aside>
+    </div>
+
+    <script>
+        const SUPABASE_URL = 'https://gicamioeiitrfwhtvqxv.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdpY2FtaW9laWl0cmZ3aHR2cXh2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA4NDc3NzEsImV4cCI6MjA5NjQyMzc3MX0.YD0A85STez01eTGi5szOlKmY2DwdZev_-3KVxUuoz8U';
+        const mySupabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        async function checkAuth() {
+            const { data: { session } } = await mySupabase.auth.getSession();
+            if (!session) {
+                window.location.href = 'sign-in.html';
+            }
+        }
+        checkAuth();
+
+        function toggleSidebar() {
+            const sidebar = document.getElementById('mobileSidebar');
+            sidebar.classList.toggle('hidden');
+        }
+
+        async function logout() {
+            await mySupabase.auth.signOut();
+            window.location.href = 'sign-in.html';
+        }
+    </script>
+</body>
+</html>
