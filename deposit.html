@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Make a Deposit - TITAN FX TRADING</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        .gradient-bg { background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); }
+        .gold-gradient { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); }
+        .glass-card { background: rgba(30, 41, 59, 0.8); backdrop-filter: blur(20px); border: 1px solid rgba(245, 158, 11, 0.15); }
+        .input-dark { background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(245, 158, 11, 0.3); transition: all 0.3s ease; }
+        .input-dark:focus { border-color: #f59e0b; box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.1); outline: none; }
+        .crypto-card { 
+            transition: all 0.3s ease; 
+            cursor: pointer; 
+            border: 2px solid rgba(245, 158, 11, 0.2);
+        }
+        .crypto-card:hover { 
+            border-color: #f59e0b; 
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(245, 158, 11, 0.2);
+        }
+        .crypto-card.selected { 
+            border-color: #f59e0b; 
+            background: rgba(245, 158, 11, 0.1);
+            box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.3);
+        }
+        .crypto-card.selected:hover { transform: translateY(0); }
+        .step-indicator { 
+            transition: all 0.3s ease;
+        }
+        .step-indicator.active { 
+            background: #f59e0b; 
+            color: #0f172a;
+        }
+        .step-indicator.completed { 
+            background: #10b981; 
+            color: white;
+        }
+    </style>
+</head>
+<body class="gradient-bg min-h-screen text-slate-200">
+    <!-- Top Navigation -->
+    <nav class="border-b border-slate-700/50 bg-[#0f172a]/95 backdrop-blur-lg sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16 items-center">
+                <div class="flex items-center gap-2">
+                    <a href="dashboard.html" class="text-amber-500 hover:text-amber-400 flex items-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+                        <span class="font-semibold">Back to Dashboard</span>
+                    </a>
+                </div>
+                <div class="flex items-center gap-4">
+                    <span class="text-slate-400 text-sm hidden sm:block" id="userBalance">Balance: $0.00</span>
+                    <div class="w-10 h-10 rounded-full gold-gradient flex items-center justify-center text-white font-bold shadow-lg">
+                        <span id="userAvatar">U</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <!-- Header -->
+        <div class="text-center mb-10">
+            <h1 class="text-4xl font-bold text-white mb-3">Make a Deposit</h1>
+            <p class="text-slate-400 text-lg">Fund your account securely using cryptocurrency.</p>
+        </div>
+
+        <!-- Step Indicator -->
+        <div class="flex items-center justify-center mb-12">
+            <div class="flex items-center gap-4">
+                <div class="step-indicator active flex items-center justify-center w-10 h-10 rounded-full bg-amber-500 text-[#0f172a] font-bold">1</div>
+                <div class="w-16 h-0.5 bg-slate-700"></div>
+                <div class="step-indicator flex items-center justify-center w-10 h-10 rounded-full bg-slate-700 text-slate-400 font-bold">2</div>
+                <div class="w-16 h-0.5 bg-slate-700"></div>
+                <div class="step-indicator flex items-center justify-center w-10 h-10 rounded-full bg-slate-700 text-slate-400 font-bold">3</div>
+            </div>
+            <div class="flex gap-8 ml-8 text-sm">
+                <span class="text-amber-500 font-medium">Choose Crypto</span>
+                <span class="text-slate-400">Send Funds</span>
+                <span class="text-slate-400">Confirm</span>
+            </div>
+        </div>
+
+        <!-- Crypto Selection -->
+        <div class="mb-8">
+            <h2 class="text-xl font-semibold text-white mb-4">Select Cryptocurrency</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4" id="cryptoOptions">
+                <!-- Bitcoin -->
+                <div class="crypto-card rounded-xl p-5 bg-slate-800/50" onclick="selectCrypto('btc')">
+                    <div class="flex items-center gap-3 mb-2">
+                        <div class="w-12 h-12 rounded-full bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center text-white font-bold text-xl">₿</div>
+                        <div>
+                            <h3 class="text-white font-semibold">Bitcoin</h3>
+                            <p class="text-slate-400 text-sm">BTC Network</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Ethereum -->
+                <div class="crypto-card rounded-xl p-5 bg-slate-800/50" onclick="selectCrypto('eth')">
+                    <div class="flex items-center gap-3 mb-2">
+                        <div class="w-12 h-12 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white font-bold text-xl">Ξ</div>
+                        <div>
+                            <h3 class="text-white font-semibold">Ethereum</h3>
+                            <p class="text-slate-400 text-sm">ERC-20 Network</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- USDT TRC20 -->
+                <div class="crypto-card rounded-xl p-5 bg-slate-800/50" onclick="selectCrypto('usdt-trc20')">
+                    <div class="flex items-center gap-3 mb-2">
+                        <div class="w-12 h-12 rounded-full bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center text-white font-bold text-xl">$</div>
+                        <div>
+                            <h3 class="text-white font-semibold">Tether (USDT)</h3>
+                            <p class="text-slate-400 text-sm">TRC-20 Network</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- USDT ERC20 -->
+                <div class="crypto-card rounded-xl p-5 bg-slate-800/50 selected" onclick="selectCrypto('usdt-erc20')" id="crypto-usdt-erc20">
+                    <div class="flex items-center gap-3 mb-2">
+                        <div class="w-12 h-12 rounded-full bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center text-white font-bold text-xl">$</div>
+                        <div>
+                            <h3 class="text-white font-semibold">Tether (USDT)</h3>
+                            <p class="text-slate-400 text-sm">ERC-20 Network</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Deposit Details -->
+        <div class="glass-card rounded-2xl p-6 md:p-8" id="depositDetails">
+            <div class="flex items-center gap-3 mb-6">
+                <div class="w-12 h-12 rounded-full bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center text-white font-bold text-2xl">$</div>
+                <div>
+                    <h3 class="text-2xl font-bold text-white" id="selectedCryptoName">Tether (USDT)</h3>
+                    <p class="text-slate-400" id="selectedCryptoNetwork">ERC-20 Network</p>
+                </div>
+            </div>
+
+            <!-- Warning -->
+            <div class="bg-amber-500/10 border border-amber-500/30 rounded-xl p-4 mb-6">
+                <div class="flex items-start gap-3">
+                    <svg class="w-6 h-6 text-amber-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"/>
+                    </svg>
+                    <div>
+                        <p class="text-amber-400 font-semibold mb-1">Important:</p>
+                        <p class="text-slate-300 text-sm">Only send <span id="warningCrypto">USDT (ERC-20)</span> to this address. Sending any other cryptocurrency or using the wrong network may result in the <span class="text-amber-400 font-semibold">permanent loss</span> of your funds.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Deposit Address -->
+            <div class="mb-6">
+                <label class="block text-slate-400 text-sm font-medium mb-2">DEPOSIT ADDRESS</label>
+                <div class="flex gap-3">
+                    <input type="text" id="depositAddress" readonly 
+                        class="input-dark flex-1 px-4 py-3 rounded-xl text-white font-mono text-sm bg-slate-800/50 border border-slate-700"
+                        value="0xc461692A770BA7750301D6c584fC94021590AD44">
+                    <button onclick="copyAddress()" class="gold-gradient px-6 py-3 rounded-xl text-white font-semibold hover:opacity-90 transition-all flex items-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                        Copy
+                    </button>
+                </div>
+            </div>
+
+            <!-- QR Code -->
+            <div class="flex flex-col md:flex-row items-center gap-6 p-6 bg-slate-800/30 rounded-xl mb-6">
+                <div id="qrcode" class="bg-white p-4 rounded-lg"></div>
+                <div class="text-center md:text-left">
+                    <p class="text-slate-400 text-sm mb-2">Scan QR code with your wallet app</p>
+                    <p class="text-white font-semibold">Or copy the address above</p>
+                </div>
+            </div>
+
+            <!-- Amount Input -->
+            <div class="mb-6">
+                <label class="block text-sm font-medium text-slate-300 mb-2">Deposit Amount (USD)</label>
+                <div class="relative">
+                    <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">$</span>
+                    <input type="number" id="amount" required min="10" step="0.01"
+                        class="input-dark w-full pl-8 pr-4 py-3 rounded-xl text-white placeholder-slate-500"
+                        placeholder="0.00">
+                </div>
+                <p class="text-xs text-slate-500 mt-1">Minimum deposit: $10.00</p>
+            </div>
+
+            <!-- Transaction Hash -->
+            <div class="mb-6">
+                <label class="block text-sm font-medium text-slate-300 mb-2">Transaction Hash / ID <span class="text-slate-500">(Optional - After sending)</span></label>
+                <input type="text" id="txHash"
+                    class="input-dark w-full px-4 py-3 rounded-xl text-white placeholder-slate-500"
+                    placeholder="Paste transaction hash after sending (optional)">
+            </div>
+
+            <!-- Messages -->
+            <div id="errorMsg" class="hidden p-3 bg-red-500/20 border border-red-500/50 rounded-xl text-red-300 text-sm text-center mb-4"></div>
+            <div id="successMsg" class="hidden p-3 bg-green-500/20 border border-green-500/50 rounded-xl text-green-300 text-sm text-center mb-4"></div>
+
+            <!-- Submit Button -->
+            <button onclick="submitDeposit()" id="depositBtn" class="w-full gold-gradient text-white font-semibold py-4 rounded-xl hover:opacity-90 transition-all duration-300 shadow-lg flex items-center justify-center text-lg">
+                <span id="btnText">Submit Deposit Request</span>
+                <svg id="btnSpinner" class="hidden animate-spin ml-2 w-5 h-5" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+            </button>
+        </div>
+        
+        <p class="text-center text-slate-500 text-xs mt-6">
+            ⚠️ Only send funds on the selected network. Sending to the wrong network may result in permanent loss.
+        </p>
+    </div>
+
+    <script>
+        const SUPABASE_URL = 'https://gicamioeiitrfwhtvqxv.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdpY2FtaW9laWl0cmZ3aHR2cXh2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA4NDc3NzEsImV4cCI6MjA5NjQyMzc3MX0.YD0A85STez01eTGi5szOlKmY2DwdZev_-3KVxUuoz8U';
+        const mySupabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        let currentUser = null;
+        let selectedCrypto = 'usdt-erc20';
+
+        // Crypto data - YOUR PAYBIS ADDRESSES
+        const cryptoData = {
+            'btc': {
+                name: 'Bitcoin',
+                network: 'BTC Network',
+                address: 'bc1q433gufc9wqq3083jev997c54uqpemnl3s82tuv',
+                warning: 'Bitcoin (BTC)',
+                icon: '₿',
+                gradient: 'from-orange-400 to-orange-600'
+            },
+            'eth': {
+                name: 'Ethereum',
+                network: 'ERC-20 Network',
+                address: '0xc461692A770BA7750301D6c584fC94021590AD44',
+                warning: 'Ethereum (ETH)',
+                icon: 'Ξ',
+                gradient: 'from-blue-400 to-blue-600'
+            },
+            'usdt-trc20': {
+                name: 'Tether (USDT)',
+                network: 'TRC-20 Network',
+                address: 'TKQnt66jetXzcyyhAP3r7SoxVW8JAXNrPx',
+                warning: 'USDT (TRC-20)',
+                icon: '$',
+                gradient: 'from-green-400 to-green-600'
+            },
+            'usdt-erc20': {
+                name: 'Tether (USDT)',
+                network: 'ERC-20 Network',
+                address: '0xc461692A770BA7750301D6c584fC94021590AD44',
+                warning: 'USDT (ERC-20)',
+                icon: '$',
+                gradient: 'from-green-400 to-green-600'
+            }
+        };
+
+        // Initialize
+        async function init() {
+            const { data: { session } } = await mySupabase.auth.getSession();
+            if (!session) {
+                window.location.href = 'sign-in.html'; // Updated to match your sign-in file name
+                return;
+            }
+            currentUser = session.user;
+            
+            const { data: profile } = await mySupabase.from('users').select('balance, first_name').eq('id', currentUser.id).single();
+            if (profile) {
+                document.getElementById('userBalance').textContent = `Balance: $${(profile.balance || 0).toFixed(2)}`;
+                document.getElementById('userAvatar').textContent = (profile.first_name || 'U')[0].toUpperCase();
+            }
+
+            // Initialize QR code
+            generateQRCode(cryptoData[selectedCrypto].address);
+        }
+
+        // Select Crypto
+        function selectCrypto(crypto) {
+            selectedCrypto = crypto;
+            const data = cryptoData[crypto];
+
+            // Update UI
+            document.querySelectorAll('.crypto-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            event.currentTarget.classList.add('selected');
+
+            // Update deposit details
+            document.getElementById('selectedCryptoName').textContent = data.name;
+            document.getElementById('selectedCryptoNetwork').textContent = data.network;
+            document.getElementById('depositAddress').value = data.address;
+            document.getElementById('warningCrypto').textContent = data.warning;
+
+            // Update icon
+            const iconDiv = document.querySelector('#depositDetails .w-12');
+            iconDiv.className = `w-12 h-12 rounded-full bg-gradient-to-br ${data.gradient} flex items-center justify-center text-white font-bold text-2xl`;
+            iconDiv.textContent = data.icon;
+
+            // Regenerate QR code
+            generateQRCode(data.address);
+        }
+
+        // Generate QR Code
+        function generateQRCode(address) {
+            const qrContainer = document.getElementById('qrcode');
+            qrContainer.innerHTML = '';
+            new QRCode(qrContainer, {
+                text: address,
+                width: 150,
+                height: 150,
+                colorDark: "#0f172a",
+                colorLight: "#ffffff",
+                correctLevel: QRCode.CorrectLevel.H
+            });
+        }
+
+        // Copy Address
+        function copyAddress() {
+            const address = document.getElementById('depositAddress').value;
+            navigator.clipboard.writeText(address).then(() => {
+                const btn = event.currentTarget;
+                const originalHTML = btn.innerHTML;
+                btn.innerHTML = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> Copied!';
+                setTimeout(() => btn.innerHTML = originalHTML, 2000);
+            });
+        }
+
+        // Submit Deposit
+        async function submitDeposit() {
+            const amount = parseFloat(document.getElementById('amount').value);
+            const txHash = document.getElementById('txHash').value.trim();
+            const address = document.getElementById('depositAddress').value;
+            const crypto = cryptoData[selectedCrypto];
+
+            const errorMsg = document.getElementById('errorMsg');
+            const successMsg = document.getElementById('successMsg');
+            const btn = document.getElementById('depositBtn');
+            const btnText = document.getElementById('btnText');
+            const spinner = document.getElementById('btnSpinner');
+
+            errorMsg.classList.add('hidden');
+            successMsg.classList.add('hidden');
+
+            if (!amount || amount < 10) {
+                errorMsg.textContent = 'Minimum deposit amount is $10.00';
+                errorMsg.classList.remove('hidden');
+                return;
+            }
+
+            btn.disabled = true;
+            btnText.textContent = 'Processing...';
+            spinner.classList.remove('hidden');
+
+            try {
+                // Build the transaction data - transaction_hash is optional
+                const transactionData = {
+                    user_id: currentUser.id,
+                    type: 'deposit',
+                    amount: amount,
+                    payment_method: `${crypto.name} (${crypto.network})`,
+                    wallet_address: address,
+                    status: 'pending'
+                };
+
+                // Only include transaction_hash if user provided one
+                if (txHash) {
+                    transactionData.transaction_hash = txHash;
+                }
+
+                // Try to insert the transaction
+                const { data, error } = await mySupabase.from('transactions').insert([transactionData]);
+
+                // If error is about missing transaction_hash column, retry without it
+                if (error && error.code === 'PGRST204' && error.message.includes('transaction_hash')) {
+                    console.log('transaction_hash column not found, retrying without it...');
+                    
+                    // Remove transaction_hash and retry
+                    delete transactionData.transaction_hash;
+                    
+                    const { data: retryData, error: retryError } = await mySupabase.from('transactions').insert([transactionData]);
+                    
+                    if (retryError) throw retryError;
+                    
+                    // Success on retry
+                    successMsg.textContent = '✅ Deposit request submitted successfully! Our team will verify your transaction shortly.';
+                    successMsg.classList.remove('hidden');
+                    document.getElementById('amount').value = '';
+                    document.getElementById('txHash').value = '';
+                    
+                    setTimeout(() => window.location.href = 'dashboard.html', 3000);
+                    return;
+                }
+
+                // If there's any other error, throw it
+                if (error) throw error;
+
+                // Success on first try
+                successMsg.textContent = '✅ Deposit request submitted successfully! Our team will verify your transaction shortly.';
+                successMsg.classList.remove('hidden');
+                document.getElementById('amount').value = '';
+                document.getElementById('txHash').value = '';
+
+                setTimeout(() => window.location.href = 'dashboard.html', 3000);
+            } catch (err) {
+                console.error(err);
+                errorMsg.textContent = 'Failed to submit deposit request. Please try again.';
+                errorMsg.classList.remove('hidden');
+            } finally {
+                btn.disabled = false;
+                btnText.textContent = 'Submit Deposit Request';
+                spinner.classList.add('hidden');
+            }
+        }
+
+        // Initialize when DOM is ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', init);
+        } else {
+            init();
+        }
+    </script>
+</body>
+</html>
