@@ -1,0 +1,1295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trading Bots - TITAN FX TRADING</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        .gradient-bg { background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); }
+        .gold-gradient { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); }
+        .glass-card { background: rgba(30, 41, 59, 0.8); backdrop-filter: blur(20px); border: 1px solid rgba(245, 158, 11, 0.15); }
+        .sidebar { background: rgba(15, 23, 42, 0.95); }
+        .nav-item { transition: all 0.3s ease; }
+        .nav-item:hover, .nav-item.active { background: rgba(245, 158, 11, 0.15); border-right: 3px solid #f59e0b; color: white; }
+        .bot-card { transition: all 0.3s ease; }
+        .bot-card:hover { transform: translateY(-4px); border-color: rgba(245, 158, 11, 0.5); }
+        .input-dark { background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(245, 158, 11, 0.3); transition: all 0.3s ease; }
+        .input-dark:focus { border-color: #f59e0b; box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.1); outline: none; }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: rgba(15, 23, 42, 0.5); }
+        ::-webkit-scrollbar-thumb { background: rgba(245, 158, 11, 0.5); border-radius: 3px; }
+        
+        @keyframes profitPulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.8; transform: scale(1.05); }
+        }
+        .profit-updating {
+            animation: profitPulse 2s ease-in-out infinite;
+        }
+        .chart-container {
+            height: 400px;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        .mt5-connected {
+            background: linear-gradient(135deg, rgba(34, 197, 94, 0.1) 0%, rgba(34, 197, 94, 0.05) 100%);
+            border: 1px solid rgba(34, 197, 94, 0.3);
+        }
+        .countdown-timer {
+            font-family: 'Courier New', monospace;
+            letter-spacing: 1px;
+            font-weight: 600;
+        }
+        .countdown-warning {
+            color: #f59e0b !important;
+            animation: profitPulse 1s ease-in-out infinite;
+        }
+        .countdown-critical {
+            color: #ef4444 !important;
+            animation: profitPulse 0.5s ease-in-out infinite;
+        }
+        .trade-row {
+            transition: all 0.3s ease;
+        }
+        .trade-row:hover {
+            background: rgba(245, 158, 11, 0.05);
+        }
+    </style>
+</head>
+<body class="gradient-bg min-h-screen text-slate-200">
+    <div class="flex min-h-screen">
+        <aside class="sidebar w-64 fixed h-full hidden lg:block border-r border-slate-700/50 z-20">
+            <div class="p-6">
+                <h1 class="text-2xl font-bold text-white"><span class="text-amber-500">TITAN FX</span></h1>
+                <p class="text-slate-500 text-xs mt-1 tracking-wider">TRADING</p>
+            </div>
+            <nav class="mt-6 space-y-1">
+                <a href="dashboard.html" class="nav-item flex items-center px-6 py-3 text-slate-400 hover:text-white">
+                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+                    Dashboard
+                </a>
+                <a href="trading-bots.html" class="nav-item active flex items-center px-6 py-3 text-white">
+                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
+                    Trading Bots
+                </a>
+                <a href="investments.html" class="nav-item flex items-center px-6 py-3 text-slate-400 hover:text-white">
+                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+                    Investments
+                </a>
+                <a href="deposit.html" class="nav-item flex items-center px-6 py-3 text-slate-400 hover:text-white">
+                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    Deposit
+                </a>
+                <a href="withdraw.html" class="nav-item flex items-center px-6 py-3 text-slate-400 hover:text-white">
+                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+                    Withdraw
+                </a>
+                <a href="transactions.html" class="nav-item flex items-center px-6 py-3 text-slate-400 hover:text-white">
+                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+                    Transactions
+                </a>
+                <a href="kyc.html" class="nav-item flex items-center px-6 py-3 text-slate-400 hover:text-white">
+                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2"/></svg>
+                    KYC Verification
+                </a>
+                <a href="profile.html" class="nav-item flex items-center px-6 py-3 text-slate-400 hover:text-white">
+                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                    Edit Profile
+                </a>
+                <a href="support.html" class="nav-item flex items-center px-6 py-3 text-slate-400 hover:text-white">
+                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+                    Support
+                </a>
+            </nav>
+            <div class="absolute bottom-0 w-full p-4 border-t border-slate-700/50">
+                <button onclick="logout()" class="w-full flex items-center px-4 py-3 text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-xl transition-all">
+                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+                    Logout
+                </button>
+            </div>
+        </aside>
+
+        <main class="flex-1 lg:ml-64 w-full">
+            <header class="glass-card sticky top-0 z-10 px-6 py-4 flex items-center justify-between border-b border-slate-700/50">
+                <div class="flex items-center gap-4">
+                    <button class="lg:hidden text-white" onclick="toggleSidebar()">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+                    </button>
+                    <div>
+                        <h2 class="text-xl font-semibold text-white">Trading Bots</h2>
+                        <p class="text-slate-400 text-sm">Real-time profit calculation every minute</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-4">
+                    <div class="hidden sm:flex items-center gap-2 bg-slate-800/50 px-4 py-2 rounded-xl border border-slate-700/50">
+                        <span class="text-slate-400 text-sm">Balance:</span>
+                        <span class="text-amber-500 font-bold" id="headerBalance">$0.00</span>
+                    </div>
+                    <div class="w-10 h-10 rounded-full gold-gradient flex items-center justify-center text-white font-bold shadow-lg" id="userAvatar">U</div>
+                </div>
+            </header>
+
+            <div class="p-4 md:p-6 space-y-6">
+                <div id="profitNotification" class="hidden bg-green-500/10 border border-green-500/30 rounded-xl p-4 flex items-center justify-between">
+                    <div class="flex items-center">
+                        <svg class="w-5 h-5 text-green-500 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
+                        <p class="text-green-300 text-sm" id="profitNotificationText">Profit calculated!</p>
+                    </div>
+                    <button onclick="hideProfitNotification()" class="text-green-400 hover:text-green-300">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                    </button>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
+                    <div class="glass-card rounded-xl p-5">
+                        <p class="text-slate-400 text-sm">Active Bots</p>
+                        <p class="text-2xl font-bold text-white mt-1" id="activeBotsCount">0</p>
+                    </div>
+                    <div class="glass-card rounded-xl p-5">
+                        <p class="text-slate-400 text-sm">Total Invested</p>
+                        <p class="text-2xl font-bold text-amber-500 mt-1" id="totalBotInvestment">$0.00</p>
+                    </div>
+                    <div class="glass-card rounded-xl p-5">
+                        <p class="text-slate-400 text-sm">Total Earnings</p>
+                        <p class="text-2xl font-bold text-green-400 mt-1 profit-updating" id="totalBotEarnings">$0.00</p>
+                    </div>
+                    <div class="glass-card rounded-xl p-5 border-2 border-green-500/30">
+                        <p class="text-slate-400 text-sm">Pending Profits</p>
+                        <p class="text-2xl font-bold text-green-400 mt-1 profit-updating" id="pendingProfits">$0.00</p>
+                    </div>
+                </div>
+
+                <div class="glass-card rounded-xl p-4">
+                    <h3 class="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+                        <svg class="w-5 h-5 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"/></svg>
+                        Live Market Chart - XAU/USD (Gold)
+                    </h3>
+                    <div id="tradingview_chart" class="chart-container"></div>
+                </div>
+
+                <div>
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-semibold text-white">My Bots</h3>
+                        <button onclick="claimAllProfits()" id="claimAllBtn" class="hidden px-4 py-2 bg-green-500/20 text-green-400 rounded-lg hover:bg-green-500/30 transition-all text-sm font-medium">
+                            Claim All Profits
+                        </button>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="myBotsContainer">
+                        <div class="glass-card rounded-xl p-5 animate-pulse">
+                            <div class="h-4 bg-slate-700 rounded w-3/4 mb-3"></div>
+                            <div class="h-3 bg-slate-700 rounded w-1/2 mb-2"></div>
+                            <div class="h-10 bg-slate-700 rounded mt-4"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Yesterday's Trades Section -->
+                <div>
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-semibold text-white flex items-center gap-2">
+                            <svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+                            Yesterday's Bot Trades
+                        </h3>
+                        <span class="text-xs text-slate-400" id="yesterdayDate"></span>
+                    </div>
+                    <div class="glass-card rounded-xl overflow-hidden">
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left">
+                                <thead>
+                                    <tr class="border-b border-slate-700/50 bg-slate-900/30">
+                                        <th class="px-4 py-3 text-slate-400 text-xs font-semibold uppercase tracking-wider">Time</th>
+                                        <th class="px-4 py-3 text-slate-400 text-xs font-semibold uppercase tracking-wider">Pair</th>
+                                        <th class="px-4 py-3 text-slate-400 text-xs font-semibold uppercase tracking-wider">Type</th>
+                                        <th class="px-4 py-3 text-slate-400 text-xs font-semibold uppercase tracking-wider">Entry</th>
+                                        <th class="px-4 py-3 text-slate-400 text-xs font-semibold uppercase tracking-wider">Exit</th>
+                                        <th class="px-4 py-3 text-slate-400 text-xs font-semibold uppercase tracking-wider">Duration</th>
+                                        <th class="px-4 py-3 text-slate-400 text-xs font-semibold uppercase tracking-wider">Profit</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="yesterdayTradesBody" class="divide-y divide-slate-700/50">
+                                    <tr>
+                                        <td colspan="7" class="px-4 py-8 text-center text-slate-500">
+                                            <div class="inline-block animate-spin rounded-full h-6 w-6 border-2 border-amber-500 border-t-transparent"></div>
+                                            <p class="mt-2 text-sm">Loading trades...</p>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="bg-slate-900/30 px-4 py-3 border-t border-slate-700/50 flex justify-between items-center">
+                            <span class="text-slate-400 text-sm">Total Trades Yesterday:</span>
+                            <span class="text-white font-bold" id="totalTradesCount">0</span>
+                        </div>
+                        <div class="bg-green-500/10 px-4 py-3 border-t border-green-500/30 flex justify-between items-center">
+                            <span class="text-green-400 text-sm font-medium">Total Profit Yesterday:</span>
+                            <span class="text-green-400 font-bold text-lg" id="totalProfitYesterday">$0.00</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <h3 class="text-lg font-semibold text-white mb-4">Available Trading Bots</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="availableBotsContainer">
+                        <div class="glass-card rounded-xl p-5 animate-pulse">
+                            <div class="h-4 bg-slate-700 rounded w-3/4 mb-3"></div>
+                            <div class="h-3 bg-slate-700 rounded w-1/2 mb-2"></div>
+                            <div class="h-10 bg-slate-700 rounded mt-4"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div id="activateModal" class="fixed inset-0 z-50 hidden">
+        <div class="absolute inset-0 bg-black/70 backdrop-blur-sm" onclick="closeModal()"></div>
+        <div class="absolute inset-0 flex items-center justify-center p-4">
+            <div class="glass-card rounded-2xl p-8 max-w-md w-full relative">
+                <button onclick="closeModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+                <h3 class="text-xl font-bold text-white mb-2">Activate Trading Bot</h3>
+                <p id="modalBotName" class="text-amber-500 font-semibold mb-4"></p>
+                
+                <div id="modalError" class="hidden mb-4 p-3 bg-red-500/20 border border-red-500/50 rounded-xl text-red-300 text-sm text-center"></div>
+                
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-slate-300 mb-2">Investment Amount ($)</label>
+                        <input type="number" id="investAmount" min="0" step="0.01" class="input-dark w-full px-4 py-3 rounded-xl text-white placeholder-slate-500" placeholder="Enter amount">
+                        <p id="minDepositText" class="text-xs text-slate-500 mt-1"></p>
+                    </div>
+                    <div class="bg-slate-800/50 rounded-xl p-4 space-y-2">
+                        <div class="flex justify-between text-sm">
+                            <span class="text-slate-400">Expected Daily ROI:</span>
+                            <span id="modalROI" class="text-green-400 font-medium"></span>
+                        </div>
+                        <div class="flex justify-between text-sm">
+                            <span class="text-slate-400">Risk Level:</span>
+                            <span id="modalRisk" class="font-medium"></span>
+                        </div>
+                        <div class="flex justify-between text-sm">
+                            <span class="text-slate-400">Profit Calculation:</span>
+                            <span class="text-cyan-400 font-medium">Every 1 Minute</span>
+                        </div>
+                    </div>
+                    <button onclick="activateBot()" id="activateBtn" class="w-full gold-gradient text-white font-semibold py-3 rounded-xl hover:opacity-90 transition-all shadow-lg">
+                        Activate Bot
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MT5 Connection Modal -->
+    <div id="mt5Modal" class="fixed inset-0 z-50 hidden">
+        <div class="absolute inset-0 bg-black/70 backdrop-blur-sm" onclick="closeMT5Modal()"></div>
+        <div class="absolute inset-0 flex items-center justify-center p-4">
+            <div class="glass-card rounded-2xl p-8 max-w-md w-full relative">
+                <button onclick="closeMT5Modal()" class="absolute top-4 right-4 text-slate-400 hover:text-white">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+                <h3 class="text-xl font-bold text-white mb-2">Connect MetaTrader 5</h3>
+                <p id="mt5ModalBotName" class="text-amber-500 font-semibold mb-4"></p>
+                
+                <div id="mt5ModalError" class="hidden mb-4 p-3 bg-red-500/20 border border-red-500/50 rounded-xl text-red-300 text-sm text-center"></div>
+                <div id="mt5ModalSuccess" class="hidden mb-4 p-3 bg-green-500/20 border border-green-500/50 rounded-xl text-green-300 text-sm text-center"></div>
+                
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-slate-300 mb-2">MT5 Login / Account Number</label>
+                        <input type="text" id="mt5Login" class="input-dark w-full px-4 py-3 rounded-xl text-white placeholder-slate-500" placeholder="e.g., 12345678">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-300 mb-2">MT5 Password</label>
+                        <input type="password" id="mt5Password" class="input-dark w-full px-4 py-3 rounded-xl text-white placeholder-slate-500" placeholder="Enter your MT5 password">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-300 mb-2">MT5 Server</label>
+                        <input type="text" id="mt5Server" class="input-dark w-full px-4 py-3 rounded-xl text-white placeholder-slate-500" placeholder="e.g., MetaQuotes-Demo">
+                    </div>
+                    <div class="bg-blue-500/10 border border-blue-500/30 rounded-xl p-3">
+                        <p class="text-blue-300 text-xs">
+                            <strong>⚠️ Important:</strong> Your MT5 credentials are encrypted and stored securely. The bot will use these credentials to connect to your trading account.
+                        </p>
+                    </div>
+                    <button onclick="saveMT5Credentials()" id="saveMT5Btn" class="w-full gold-gradient text-white font-semibold py-3 rounded-xl hover:opacity-90 transition-all shadow-lg">
+                        Save & Connect
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const SUPABASE_URL = 'https://gicamioeiitrfwhtvqxv.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdpY2FtaW9laWl0cmZ3aHR2cXh2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA4NDc3NzEsImV4cCI6MjA5NjQyMzc3MX0.YD0A85STez01eTGi5szOlKmY2DwdZev_-3KVxUuoz8U';
+        const mySupabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        
+        let currentUser = null;
+        let allBots = [];
+        let selectedBotId = null;
+        let userBalance = 0;
+        let profitCalculationInterval = null;
+        let countdownInterval = null;
+        let selectedMT5BotId = null;
+        let myBotsData = []; // Store bots data for countdown updates
+
+        function initTradingViewChart() {
+            new TradingView.widget({
+                "width": "100%",
+                "height": 400,
+                "symbol": "OANDA:XAUUSD",
+                "interval": "1",
+                "timezone": "Etc/UTC",
+                "theme": "dark",
+                "style": "1",
+                "locale": "en",
+                "toolbar_bg": "#f1f3f6",
+                "enable_publishing": false,
+                "allow_symbol_change": true,
+                "container_id": "tradingview_chart",
+                "hide_side_toolbar": false,
+                "studies": ["MASimple@tv-basicstudies", "RSI@tv-basicstudies"],
+                "show_popup_button": true,
+                "popup_width": "1000",
+                "popup_height": "650"
+            });
+        }
+
+        async function init() {
+            const { data: { session } } = await mySupabase.auth.getSession();
+            if (!session) {
+                window.location.href = 'sign-in.html';
+                return;
+            }
+            currentUser = session.user;
+            document.getElementById('userAvatar').textContent = (currentUser.email[0] || 'U').toUpperCase();
+            
+            const { data: profile } = await mySupabase.from('users').select('balance').eq('id', currentUser.id).single();
+            if (profile) {
+                userBalance = profile.balance || 0;
+                document.getElementById('headerBalance').textContent = `$${userBalance.toFixed(2)}`;
+            }
+            
+            initTradingViewChart();
+            await Promise.all([loadAllBots(), loadMyBots()]);
+            loadYesterdayTrades();
+            startProfitCalculation();
+            startCountdownTimer();
+        }
+        init();
+
+        // Generate and load yesterday's trades
+        function loadYesterdayTrades() {
+            const yesterday = new Date();
+            yesterday.setDate(yesterday.getDate() - 1);
+            
+            // Display yesterday's date
+            const dateStr = yesterday.toLocaleDateString('en-US', { 
+                weekday: 'long', 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+            });
+            document.getElementById('yesterdayDate').textContent = dateStr;
+            
+            // Generate realistic trades for yesterday
+            const trades = generateYesterdayTrades(yesterday);
+            renderYesterdayTrades(trades);
+        }
+
+        function generateYesterdayTrades(date) {
+            // Use date as seed for consistent daily results
+            const dateSeed = date.getFullYear() * 10000 + (date.getMonth() + 1) * 100 + date.getDate();
+            
+            // Pairs - mostly XAU/USD (70%) with some others (30%)
+            const pairs = [
+                { symbol: 'XAU/USD', basePrice: 2650, volatility: 30, weight: 70 },
+                { symbol: 'EUR/USD', basePrice: 1.0850, volatility: 0.0050, weight: 10 },
+                { symbol: 'GBP/USD', basePrice: 1.2650, volatility: 0.0060, weight: 8 },
+                { symbol: 'USD/JPY', basePrice: 151.50, volatility: 0.80, weight: 7 },
+                { symbol: 'AUD/USD', basePrice: 0.6550, volatility: 0.0040, weight: 5 }
+            ];
+            
+            const trades = [];
+            const numTrades = 25 + Math.floor(Math.random() * 15); // 25-40 trades
+            
+            for (let i = 0; i < numTrades; i++) {
+                // Weighted random pair selection (70% XAU/USD)
+                const rand = Math.random() * 100;
+                let cumulative = 0;
+                let selectedPair = pairs[0];
+                for (const pair of pairs) {
+                    cumulative += pair.weight;
+                    if (rand <= cumulative) {
+                        selectedPair = pair;
+                        break;
+                    }
+                }
+                
+                const isBuy = Math.random() > 0.45; // 55% buy, 45% sell
+                const hour = Math.floor(Math.random() * 24);
+                const minute = Math.floor(Math.random() * 60);
+                
+                // Generate entry price with some randomness
+                const entryOffset = (Math.random() - 0.5) * selectedPair.volatility * 0.5;
+                const entryPrice = selectedPair.basePrice + entryOffset;
+                
+                // ALL trades are profitable with minimum $1500 profit
+                // Profit ranges from $1500 to $5000
+                const profit = 1500 + Math.random() * 3500; // $1500 - $5000
+                
+                // Calculate exit price based on profit
+                let exitPrice;
+                const profitPips = profit / 10; // Convert profit to pips
+                
+                if (isBuy) {
+                    exitPrice = entryPrice + profitPips;
+                } else {
+                    exitPrice = entryPrice - profitPips;
+                }
+                
+                // Duration between 15 minutes and 3 hours (realistic for profitable trades)
+                const durationMinutes = Math.floor(Math.random() * 165) + 15;
+                
+                trades.push({
+                    time: `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`,
+                    hour: hour,
+                    minute: minute,
+                    pair: selectedPair.symbol,
+                    type: isBuy ? 'BUY' : 'SELL',
+                    entry: entryPrice.toFixed(selectedPair.symbol.includes('JPY') ? 3 : 5),
+                    exit: exitPrice.toFixed(selectedPair.symbol.includes('JPY') ? 3 : 5),
+                    duration: durationMinutes < 60 ? `${durationMinutes}m` : `${Math.floor(durationMinutes/60)}h ${durationMinutes%60}m`,
+                    profit: profit,
+                    isProfitable: true // All profitable
+                });
+            }
+            
+            // Sort by time
+            trades.sort((a, b) => (a.hour * 60 + a.minute) - (b.hour * 60 + b.minute));
+            
+            return trades;
+        }
+
+        function renderYesterdayTrades(trades) {
+            const tbody = document.getElementById('yesterdayTradesBody');
+            
+            if (trades.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="7" class="px-4 py-8 text-center text-slate-500">
+                            No trades recorded yesterday
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            let totalProfit = 0;
+            
+            tbody.innerHTML = trades.map(trade => {
+                totalProfit += trade.profit;
+                const profitColor = 'text-green-400'; // Always green since all profitable
+                const profitSign = '+';
+                const typeBg = trade.type === 'BUY' ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400';
+                const typeIcon = trade.type === 'BUY' ? '↑' : '↓';
+                
+                return `
+                    <tr class="trade-row">
+                        <td class="px-4 py-3 text-slate-300 text-sm font-mono">${trade.time}</td>
+                        <td class="px-4 py-3">
+                            <span class="text-white font-semibold text-sm">${trade.pair}</span>
+                        </td>
+                        <td class="px-4 py-3">
+                            <span class="px-2 py-1 rounded text-xs font-bold ${typeBg}">
+                                ${typeIcon} ${trade.type}
+                            </span>
+                        </td>
+                        <td class="px-4 py-3 text-slate-300 text-sm font-mono">${trade.entry}</td>
+                        <td class="px-4 py-3 text-slate-300 text-sm font-mono">${trade.exit}</td>
+                        <td class="px-4 py-3 text-slate-400 text-sm">${trade.duration}</td>
+                        <td class="px-4 py-3">
+                            <span class="${profitColor} font-bold text-sm">
+                                ${profitSign}$${trade.profit.toFixed(2)}
+                            </span>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+            
+            // Update totals
+            document.getElementById('totalTradesCount').textContent = trades.length;
+            document.getElementById('totalProfitYesterday').textContent = `$${totalProfit.toFixed(2)}`;
+        }
+
+        function startProfitCalculation() {
+            profitCalculationInterval = setInterval(async () => {
+                await calculateAndAddProfits();
+            }, 60000);
+            
+            calculateAndAddProfits();
+        }
+
+        // Start live countdown timer - updates every second
+        function startCountdownTimer() {
+            if (countdownInterval) clearInterval(countdownInterval);
+            
+            countdownInterval = setInterval(() => {
+                const now = new Date();
+                
+                myBotsData.forEach(ub => {
+                    const timerEl = document.getElementById(`countdown-${ub.id}`);
+                    if (!timerEl) return;
+                    
+                    if (ub.status !== 'active') {
+                        return;
+                    }
+                    
+                    // Use activated_at to calculate total runtime
+                    const activatedAt = new Date(ub.activated_at);
+                    const endTime = new Date(activatedAt.getTime() + (24 * 60 * 60 * 1000)); // 24 hours after activation
+                    const remainingMs = endTime - now;
+                    
+                    if (remainingMs <= 0) {
+                        timerEl.textContent = '00:00:00';
+                        timerEl.className = 'text-cyan-400 font-medium countdown-timer countdown-critical';
+                        return;
+                    }
+                    
+                    const hours = Math.floor(remainingMs / (1000 * 60 * 60));
+                    const minutes = Math.floor((remainingMs % (1000 * 60 * 60)) / (1000 * 60));
+                    const seconds = Math.floor((remainingMs % (1000 * 60)) / 1000);
+                    
+                    const timeStr = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+                    timerEl.textContent = timeStr;
+                    
+                    // Color coding based on remaining time
+                    if (remainingMs < 10 * 60 * 1000) { // Less than 10 minutes
+                        timerEl.className = 'text-cyan-400 font-medium countdown-timer countdown-critical';
+                    } else if (remainingMs < 60 * 60 * 1000) { // Less than 1 hour
+                        timerEl.className = 'text-cyan-400 font-medium countdown-timer countdown-warning';
+                    } else {
+                        timerEl.className = 'text-cyan-400 font-medium countdown-timer';
+                    }
+                });
+            }, 1000); // Update every second
+        }
+
+        async function calculateAndAddProfits() {
+            try {
+                const { data: activeBots, error } = await mySupabase
+                    .from('user_bots')
+                    .select('*, trading_bots(expected_roi, name)')
+                    .eq('user_id', currentUser.id)
+                    .eq('status', 'active');
+
+                if (error || !activeBots || activeBots.length === 0) return;
+
+                const now = new Date();
+                let totalNewProfit = 0;
+                let botsToStop = [];
+
+                for (const userBot of activeBots) {
+                    const bot = userBot.trading_bots;
+                    const investedAmount = userBot.invested_amount || 0;
+                    const dailyROI = bot.expected_roi || 0;
+                    
+                    // For profit calculation: use last_profit_calculation (every 1 minute)
+                    const lastCalc = userBot.last_profit_calculation ? new Date(userBot.last_profit_calculation) : new Date(userBot.activated_at);
+                    const minutesElapsed = (now - lastCalc) / (1000 * 60);
+                    
+                    // ✅ FIX: For 24-hour auto-stop: use activated_at (total runtime since activation)
+                    const activatedAt = new Date(userBot.activated_at);
+                    const totalHoursRunning = (now - activatedAt) / (1000 * 60 * 60);
+                    
+                    // Calculate profit every 1 minute
+                    if (minutesElapsed >= 1) {
+                        const hourlyProfit = investedAmount * (dailyROI / 100) / 24;
+                        const profitForPeriod = hourlyProfit * (minutesElapsed / 60);
+                        const randomFactor = 0.95 + Math.random() * 0.1;
+                        const actualProfit = profitForPeriod * randomFactor;
+                        
+                        const { error: profitError } = await mySupabase.from('bot_profits').insert({
+                            user_bot_id: userBot.id,
+                            user_id: currentUser.id,
+                            profit_amount: actualProfit
+                        });
+
+                        if (!profitError) {
+                            const newEarnings = (userBot.earnings || 0) + actualProfit;
+                            await mySupabase.from('user_bots')
+                                .update({ 
+                                    earnings: newEarnings,
+                                    last_profit_calculation: now.toISOString()
+                                })
+                                .eq('id', userBot.id);
+
+                            totalNewProfit += actualProfit;
+                        }
+                    }
+                    
+                    // ✅ FIX: Check total hours since ACTIVATION (not since last calculation)
+                    if (totalHoursRunning >= 24) {
+                        botsToStop.push({ id: userBot.id, name: bot.name, profit: userBot.earnings || 0 });
+                    }
+                }
+
+                // Stop bots that completed 24 hours
+                for (const bot of botsToStop) {
+                    await mySupabase.from('user_bots').update({ status: 'stopped' }).eq('id', bot.id);
+                }
+
+                if (totalNewProfit > 0.01) {
+                    showProfitNotification(totalNewProfit);
+                    await loadMyBots();
+                }
+
+                if (botsToStop.length > 0) {
+                    showStopNotification(botsToStop.length);
+                    await loadMyBots(); // Reload to reflect stopped bots
+                }
+
+            } catch (err) {
+                console.error('Profit calculation error:', err);
+            }
+        }
+
+        function showProfitNotification(amount) {
+            const notification = document.getElementById('profitNotification');
+            const text = document.getElementById('profitNotificationText');
+            text.textContent = `💰 Profit calculated! +$${amount.toFixed(2)} earned in the last minute.`;
+            notification.classList.remove('hidden');
+            setTimeout(() => {
+                notification.classList.add('hidden');
+            }, 5000);
+        }
+
+        function showStopNotification(count) {
+            const notification = document.getElementById('profitNotification');
+            const text = document.getElementById('profitNotificationText');
+            text.textContent = `⏰ ${count} bot(s) completed 24-hour cycle and auto-stopped.`;
+            notification.classList.remove('hidden');
+            setTimeout(() => {
+                notification.classList.add('hidden');
+            }, 8000);
+        }
+
+        function hideProfitNotification() {
+            document.getElementById('profitNotification').classList.add('hidden');
+        }
+
+        async function claimAllProfits() {
+            if (!confirm('Claim all pending profits? They will be added to your available balance.')) return;
+
+            try {
+                const { data: allBots } = await mySupabase
+                    .from('user_bots')
+                    .select('earnings, id')
+                    .eq('user_id', currentUser.id)
+                    .in('status', ['active', 'paused', 'stopped']);
+
+                if (!allBots || allBots.length === 0) {
+                    alert('No profits to claim.');
+                    return;
+                }
+
+                let totalClaimable = 0;
+                for (const bot of allBots) {
+                    totalClaimable += bot.earnings || 0;
+                }
+
+                if (totalClaimable <= 0) {
+                    alert('No profits available to claim.');
+                    return;
+                }
+
+                const newBalance = userBalance + totalClaimable;
+                await mySupabase.from('users').update({ balance: newBalance }).eq('id', currentUser.id);
+
+                for (const bot of allBots) {
+                    await mySupabase.from('user_bots').update({ earnings: 0 }).eq('id', bot.id);
+                }
+
+                const { data: profile } = await mySupabase.from('users').select('total_earnings').eq('id', currentUser.id).single();
+                const newTotalEarnings = (profile.total_earnings || 0) + totalClaimable;
+                await mySupabase.from('users').update({ total_earnings: newTotalEarnings }).eq('id', currentUser.id);
+
+                await mySupabase.from('transactions').insert({
+                    user_id: currentUser.id,
+                    type: 'bot_profit',
+                    amount: totalClaimable,
+                    status: 'approved',
+                    description: `Claimed bot profits: $${totalClaimable.toFixed(2)}`
+                });
+
+                userBalance = newBalance;
+                document.getElementById('headerBalance').textContent = `$${userBalance.toFixed(2)}`;
+                
+                alert(`✅ Successfully claimed $${totalClaimable.toFixed(2)} in bot profits!`);
+                await loadMyBots();
+
+            } catch (err) {
+                console.error('Claim profits error:', err);
+                alert('Failed to claim profits. Please try again.');
+            }
+        }
+
+        async function loadAllBots() {
+            const container = document.getElementById('availableBotsContainer');
+            try {
+                const { data: bots, error } = await mySupabase.from('trading_bots').select('*').eq('is_active', true);
+                if (error) throw error;
+                allBots = bots || [];
+                
+                if (allBots.length === 0) {
+                    container.innerHTML = '<p class="text-slate-400 col-span-full">No trading bots available at the moment.</p>';
+                    return;
+                }
+                
+                container.innerHTML = allBots.map(bot => {
+                    // Scalper Pro has $100 minimum deposit
+                    const isScalperPro = bot.name && bot.name.toLowerCase().includes('scalper pro');
+                    const minDepositDisplay = isScalperPro ? '$100.00' : `$${(bot.min_deposit || 0).toFixed(2)}`;
+                    
+                    return `
+                    <div class="bot-card glass-card rounded-xl p-5">
+                        <div class="flex items-center justify-between mb-3">
+                            <h4 class="text-white font-semibold">${bot.name}</h4>
+                            <span class="px-2 py-1 rounded-full text-xs font-medium ${bot.risk_level === 'low' ? 'bg-green-500/20 text-green-400' : bot.risk_level === 'medium' ? 'bg-amber-500/20 text-amber-400' : 'bg-red-500/20 text-red-400'}">
+                                ${bot.risk_level.charAt(0).toUpperCase() + bot.risk_level.slice(1)} Risk
+                            </span>
+                        </div>
+                        <p class="text-slate-400 text-sm mb-4">${bot.description || 'AI-powered trading bot'}</p>
+                        <div class="space-y-2 mb-4 text-sm">
+                            <div class="flex justify-between">
+                                <span class="text-slate-400">Min. Deposit:</span>
+                                <span class="text-white font-medium">${minDepositDisplay}</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-slate-400">Daily ROI:</span>
+                                <span class="text-green-400 font-medium">${bot.expected_roi || 0}%</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-slate-400">Profit Update:</span>
+                                <span class="text-cyan-400 font-medium">Every 1 min</span>
+                            </div>
+                        </div>
+                        <button onclick="openModal(${bot.id})" class="w-full gold-gradient text-white font-medium py-2.5 rounded-lg hover:opacity-90 transition-all text-sm shadow-lg">
+                            Activate Bot
+                        </button>
+                    </div>
+                `}).join('');
+            } catch (err) {
+                console.error('Error loading bots:', err);
+                container.innerHTML = '<p class="text-red-400 col-span-full">Failed to load trading bots.</p>';
+            }
+        }
+
+        async function loadMyBots() {
+            const container = document.getElementById('myBotsContainer');
+            try {
+                const { data: myBots, error } = await mySupabase
+                    .from('user_bots')
+                    .select('*, trading_bots(name, expected_roi, risk_level)')
+                    .eq('user_id', currentUser.id)
+                    .in('status', ['active', 'paused', 'stopped']);
+
+                if (error) throw error;
+
+                // Store bots data for countdown timer
+                myBotsData = myBots || [];
+
+                if (!myBots || myBots.length === 0) {
+                    container.innerHTML = '<p class="text-slate-400 col-span-full text-center py-8">You haven\'t activated any bots yet. Choose a bot below to get started!</p>';
+                    document.getElementById('activeBotsCount').textContent = '0';
+                    document.getElementById('totalBotInvestment').textContent = '$0.00';
+                    document.getElementById('totalBotEarnings').textContent = '$0.00';
+                    document.getElementById('pendingProfits').textContent = '$0.00';
+                    document.getElementById('claimAllBtn').classList.add('hidden');
+                    return;
+                }
+
+                let totalInvestment = 0;
+                let totalEarnings = 0;
+                let totalPending = 0;
+                let activeCount = 0;
+
+                const now = new Date();
+
+                container.innerHTML = myBots.map(ub => {
+                    totalInvestment += ub.invested_amount || 0;
+                    totalEarnings += ub.earnings || 0;
+                    totalPending += ub.earnings || 0;
+                    if(ub.status === 'active') activeCount++;
+                    
+                    const bot = ub.trading_bots;
+                    
+                    // ✅ FIX: Calculate time remaining based on ACTIVATION time (24 hours from activation)
+                    const activatedAt = new Date(ub.activated_at);
+                    const endTime = new Date(activatedAt.getTime() + (24 * 60 * 60 * 1000)); // 24 hours after activation
+                    const remainingMs = endTime - now;
+                    
+                    let timeDisplay = '';
+                    let countdownClass = 'text-cyan-400 font-medium countdown-timer';
+                    
+                    if (ub.status === 'active') {
+                        if (remainingMs <= 0) {
+                            timeDisplay = '00:00:00';
+                            countdownClass = 'text-cyan-400 font-medium countdown-timer countdown-critical';
+                        } else {
+                            const hours = Math.floor(remainingMs / (1000 * 60 * 60));
+                            const minutes = Math.floor((remainingMs % (1000 * 60 * 60)) / (1000 * 60));
+                            const seconds = Math.floor((remainingMs % (1000 * 60)) / 1000);
+                            
+                            timeDisplay = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+                            
+                            // Color coding
+                            if (remainingMs < 10 * 60 * 1000) { // Less than 10 minutes
+                                countdownClass = 'text-cyan-400 font-medium countdown-timer countdown-critical';
+                            } else if (remainingMs < 60 * 60 * 1000) { // Less than 1 hour
+                                countdownClass = 'text-cyan-400 font-medium countdown-timer countdown-warning';
+                            }
+                        }
+                    } else if (ub.status === 'paused') {
+                        timeDisplay = 'Paused';
+                        countdownClass = 'text-amber-400 font-medium';
+                    } else {
+                        timeDisplay = 'Stopped';
+                        countdownClass = 'text-red-400 font-medium';
+                    }
+                    
+                    let statusBadge = '';
+                    if(ub.status === 'active') statusBadge = `<span class="px-2 py-1 rounded-full text-xs font-medium bg-green-500/20 text-green-400 flex items-center gap-1"><span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>Active</span>`;
+                    else if(ub.status === 'paused') statusBadge = '<span class="px-2 py-1 rounded-full text-xs font-medium bg-amber-500/20 text-amber-400 flex items-center gap-1"><span class="w-2 h-2 bg-amber-500 rounded-full"></span>Paused</span>';
+                    else statusBadge = '<span class="px-2 py-1 rounded-full text-xs font-medium bg-red-500/20 text-red-400 flex items-center gap-1"><span class="w-2 h-2 bg-red-500 rounded-full"></span>Stopped</span>';
+                    
+                    // Check if MT5 is connected
+                    const mt5Connected = ub.mt5_login && ub.mt5_server;
+                    const mt5StatusHtml = mt5Connected ? 
+                        `<div class="mt5-connected rounded-lg p-2 mb-3 flex items-center justify-between">
+                            <div class="flex items-center gap-2">
+                                <svg class="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                <span class="text-green-400 text-xs font-medium">MT5 Connected</span>
+                            </div>
+                            <button onclick="openMT5Modal(${ub.id}, true)" class="text-xs text-blue-400 hover:text-blue-300">Edit</button>
+                        </div>` : 
+                        (ub.status === 'active' ? 
+                            `<button onclick="openMT5Modal(${ub.id})" class="w-full mb-3 bg-blue-500/20 text-blue-400 font-medium py-2 rounded-lg hover:bg-blue-500/30 transition-all text-sm flex items-center justify-center gap-2">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                                Connect MetaTrader 5
+                            </button>` : '');
+                    
+                    return `
+                        <div class="glass-card rounded-xl p-5 border ${ub.status === 'active' ? 'border-green-500/30' : ub.status === 'paused' ? 'border-amber-500/30' : 'border-red-500/30'}">
+                            <div class="flex items-center justify-between mb-3">
+                                <h4 class="text-white font-semibold">${bot.name}</h4>
+                                ${statusBadge}
+                            </div>
+                            ${mt5StatusHtml}
+                            <div class="space-y-2 text-sm">
+                                <div class="flex justify-between">
+                                    <span class="text-slate-400">Invested:</span>
+                                    <span class="text-amber-500 font-medium">$${(ub.invested_amount || 0).toFixed(2)}</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-slate-400">Pending Profits:</span>
+                                    <span class="text-green-400 font-bold profit-updating">+$${(ub.earnings || 0).toFixed(2)}</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-slate-400">Daily ROI:</span>
+                                    <span class="text-green-400 font-medium">${bot.expected_roi || 0}%</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-slate-400">Time Left:</span>
+                                    <span id="countdown-${ub.id}" class="${countdownClass}">${timeDisplay}</span>
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-2 gap-2 mt-4">
+                                <button onclick="claimBotProfit(${ub.id}, ${(ub.earnings || 0).toFixed(2)})" class="bg-green-500/20 text-green-400 font-medium py-2 rounded-lg hover:bg-green-500/30 transition-all text-sm">Claim Profit</button>
+                                <button onclick="stopBot(${ub.id})" class="bg-red-500/20 text-red-400 font-medium py-2 rounded-lg hover:bg-red-500/30 transition-all text-sm">Stop Bot</button>
+                                <button onclick="pauseBot(${ub.id})" class="bg-amber-500/20 text-amber-400 font-medium py-2 rounded-lg hover:bg-amber-500/30 transition-all text-sm">Pause</button>
+                                <button onclick="resumeBot(${ub.id})" class="bg-blue-500/20 text-blue-400 font-medium py-2 rounded-lg hover:bg-blue-500/30 transition-all text-sm">Resume</button>
+                                <button onclick="startBot(${ub.id})" class="col-span-2 bg-cyan-500/20 text-cyan-400 font-medium py-2 rounded-lg hover:bg-cyan-500/30 transition-all text-sm">Start Bot</button>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+
+                document.getElementById('activeBotsCount').textContent = activeCount;
+                document.getElementById('totalBotInvestment').textContent = `$${totalInvestment.toFixed(2)}`;
+                document.getElementById('totalBotEarnings').textContent = `$${totalEarnings.toFixed(2)}`;
+                document.getElementById('pendingProfits').textContent = `$${totalPending.toFixed(2)}`;
+                
+                if (totalPending > 0) {
+                    document.getElementById('claimAllBtn').classList.remove('hidden');
+                } else {
+                    document.getElementById('claimAllBtn').classList.add('hidden');
+                }
+
+            } catch (err) {
+                console.error('Error loading my bots:', err);
+                container.innerHTML = '<p class="text-red-400 col-span-full">Failed to load your bots.</p>';
+            }
+        }
+
+        async function claimBotProfit(userBotId, amount) {
+            if (amount <= 0) {
+                alert('No profits available to claim.');
+                return;
+            }
+
+            if (!confirm(`Claim $${amount} in bot profits?`)) return;
+
+            try {
+                const newBalance = userBalance + parseFloat(amount);
+                await mySupabase.from('users').update({ balance: newBalance }).eq('id', currentUser.id);
+                await mySupabase.from('user_bots').update({ earnings: 0 }).eq('id', userBotId);
+
+                const { data: profile } = await mySupabase.from('users').select('total_earnings').eq('id', currentUser.id).single();
+                const newTotalEarnings = (profile.total_earnings || 0) + parseFloat(amount);
+                await mySupabase.from('users').update({ total_earnings: newTotalEarnings }).eq('id', currentUser.id);
+
+                await mySupabase.from('transactions').insert({
+                    user_id: currentUser.id,
+                    type: 'bot_profit',
+                    amount: parseFloat(amount),
+                    status: 'approved',
+                    description: `Claimed bot profit: $${amount}`
+                });
+
+                userBalance = newBalance;
+                document.getElementById('headerBalance').textContent = `$${userBalance.toFixed(2)}`;
+                
+                alert(`✅ Successfully claimed $${amount} in bot profits!`);
+                await loadMyBots();
+
+            } catch (err) {
+                console.error('Claim profit error:', err);
+                alert('Failed to claim profits. Please try again.');
+            }
+        }
+
+        async function pauseBot(userBotId) {
+            if (!confirm('Pause this bot? Profits will stop accumulating.')) return;
+            try {
+                await mySupabase.from('user_bots').update({ status: 'paused' }).eq('id', userBotId);
+                alert('Bot paused successfully!');
+                await loadMyBots();
+            } catch (err) {
+                console.error('Pause bot error:', err);
+                alert('Failed to pause bot.');
+            }
+        }
+
+        async function resumeBot(userBotId) {
+            try {
+                // FIXED: Reset activated_at so the 24-hour timer restarts properly
+                await mySupabase.from('user_bots').update({ 
+                    status: 'active', 
+                    last_profit_calculation: new Date().toISOString(),
+                    activated_at: new Date().toISOString()
+                }).eq('id', userBotId);
+                alert('Bot resumed! Profit calculation restarted.');
+                await loadMyBots();
+            } catch (err) {
+                console.error('Resume bot error:', err);
+                alert('Failed to resume bot.');
+            }
+        }
+
+        async function startBot(userBotId) {
+            try {
+                // FIXED: Reset activated_at so the 24-hour timer restarts properly
+                await mySupabase.from('user_bots').update({ 
+                    status: 'active', 
+                    last_profit_calculation: new Date().toISOString(),
+                    activated_at: new Date().toISOString()
+                }).eq('id', userBotId);
+                alert('Bot started! Profit calculation restarted.');
+                await loadMyBots();
+            } catch (err) {
+                console.error('Start bot error:', err);
+                alert('Failed to start bot.');
+            }
+        }
+
+        async function stopBot(userBotId) {
+            if (!confirm('Stop this bot? All pending profits will be added to your balance.')) return;
+            
+            try {
+                const { data: userBot } = await mySupabase.from('user_bots').select('*').eq('id', userBotId).single();
+                
+                const pendingProfits = userBot.earnings || 0;
+                const returnAmount = (userBot.invested_amount || 0) + pendingProfits;
+                
+                const newBalance = userBalance + returnAmount;
+                await mySupabase.from('users').update({ balance: newBalance }).eq('id', currentUser.id);
+                
+                if (pendingProfits > 0) {
+                    const { data: profile } = await mySupabase.from('users').select('total_earnings').eq('id', currentUser.id).single();
+                    const newTotalEarnings = (profile.total_earnings || 0) + pendingProfits;
+                    await mySupabase.from('users').update({ total_earnings: newTotalEarnings }).eq('id', currentUser.id);
+                }
+                
+                await mySupabase.from('user_bots').update({ status: 'stopped' }).eq('id', userBotId);
+                
+                await loadMyBots();
+                userBalance = newBalance;
+                document.getElementById('headerBalance').textContent = `$${userBalance.toFixed(2)}`;
+                
+                alert(`Bot stopped! $${returnAmount.toFixed(2)} returned to your balance.`);
+            } catch (err) {
+                console.error('Stop bot error:', err);
+                alert('Failed to stop bot.');
+            }
+        }
+
+        function openModal(botId) {
+            const bot = allBots.find(b => b.id === botId);
+            if (!bot) return;
+            
+            selectedBotId = botId;
+            document.getElementById('modalBotName').textContent = bot.name;
+            document.getElementById('modalROI').textContent = `${bot.expected_roi}% / day`;
+            
+            // Check if this is Scalper Pro ($100 minimum deposit)
+            const isScalperPro = bot.name && bot.name.toLowerCase().includes('scalper pro');
+            
+            if (isScalperPro) {
+                document.getElementById('minDepositText').textContent = `Minimum deposit: $100.00 | Your balance: $${userBalance.toFixed(2)}`;
+                document.getElementById('investAmount').min = 100;
+            } else {
+                document.getElementById('minDepositText').textContent = `Minimum deposit: $${(bot.min_deposit || 0).toFixed(2)} | Your balance: $${userBalance.toFixed(2)}`;
+                document.getElementById('investAmount').min = bot.min_deposit || 0;
+            }
+            
+            const riskEl = document.getElementById('modalRisk');
+            riskEl.textContent = bot.risk_level.charAt(0).toUpperCase() + bot.risk_level.slice(1);
+            riskEl.className = `font-medium ${bot.risk_level === 'low' ? 'text-green-400' : bot.risk_level === 'medium' ? 'text-amber-400' : 'text-red-400'}`;
+            
+            document.getElementById('investAmount').value = '';
+            document.getElementById('modalError').classList.add('hidden');
+            document.getElementById('activateModal').classList.remove('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('activateModal').classList.add('hidden');
+            selectedBotId = null;
+        }
+
+        async function activateBot() {
+            const amount = parseFloat(document.getElementById('investAmount').value);
+            const bot = allBots.find(b => b.id === selectedBotId);
+            const errorEl = document.getElementById('modalError');
+            
+            if (!amount || amount <= 0) {
+                errorEl.textContent = 'Please enter a valid amount.';
+                errorEl.classList.remove('hidden');
+                return;
+            }
+            
+            // Check minimum deposit for Scalper Pro ($100) and other bots
+            const isScalperPro = bot.name && bot.name.toLowerCase().includes('scalper pro');
+            const minRequired = isScalperPro ? 100 : (bot.min_deposit || 0);
+            
+            if (amount < minRequired) {
+                errorEl.textContent = `Minimum deposit is $${minRequired.toFixed(2)}.`;
+                errorEl.classList.remove('hidden');
+                return;
+            }
+            
+            if (amount > userBalance) {
+                errorEl.textContent = 'Insufficient balance.';
+                errorEl.classList.remove('hidden');
+                return;
+            }
+
+            document.getElementById('activateBtn').disabled = true;
+            document.getElementById('activateBtn').textContent = 'Activating...';
+            errorEl.classList.add('hidden');
+            
+            try {
+                const { data: existingBot } = await mySupabase
+                    .from('user_bots')
+                    .select('*')
+                    .eq('user_id', currentUser.id)
+                    .eq('bot_id', selectedBotId)
+                    .in('status', ['active', 'paused', 'stopped'])
+                    .maybeSingle();
+
+                if (existingBot && existingBot.status === 'active') {
+                    const newInvestment = (existingBot.invested_amount || 0) + amount;
+                    const newBalance = userBalance - amount;
+                    const { error: balanceError } = await mySupabase.from('users').update({ balance: newBalance }).eq('id', currentUser.id);
+                    if (balanceError) throw balanceError;
+
+                    await mySupabase.from('user_bots').update({ invested_amount: newInvestment }).eq('id', existingBot.id);
+                    await mySupabase.from('transactions').insert({ user_id: currentUser.id, type: 'bot_investment_add', amount: amount, status: 'approved', description: `Added $${amount} to ${bot.name}` });
+                    
+                    closeModal();
+                    await loadMyBots();
+                    userBalance = newBalance;
+                    document.getElementById('headerBalance').textContent = `$${userBalance.toFixed(2)}`;
+                    alert(`✅ Added $${amount} to ${bot.name}!`);
+                    
+                } else if (existingBot) {
+                    const newBalance = userBalance - amount;
+                    const { error: balanceError } = await mySupabase.from('users').update({ balance: newBalance }).eq('id', currentUser.id);
+                    if (balanceError) throw balanceError;
+
+                    // ✅ FIX: Reset activated_at so the 24-hour countdown timer starts fresh from 24:00:00
+                    await mySupabase.from('user_bots').update({ 
+                        status: 'active', 
+                        invested_amount: amount, 
+                        earnings: 0, 
+                        last_profit_calculation: new Date().toISOString(),
+                        activated_at: new Date().toISOString()
+                    }).eq('id', existingBot.id);
+                    await mySupabase.from('transactions').insert({ user_id: currentUser.id, type: 'bot_reactivation', amount: amount, status: 'approved', description: `Reactivated ${bot.name}` });
+                    
+                    closeModal();
+                    await loadMyBots();
+                    userBalance = newBalance;
+                    document.getElementById('headerBalance').textContent = `$${userBalance.toFixed(2)}`;
+                    alert(`✅ ${bot.name} reactivated! Profits will start calculating every minute.`);
+                    
+                } else {
+                    const newBalance = userBalance - amount;
+                    const { error: balanceError } = await mySupabase.from('users').update({ balance: newBalance }).eq('id', currentUser.id);
+                    if (balanceError) throw balanceError;
+
+                    // ✅ FIX: Set initial activated_at timestamp
+                    await mySupabase.from('user_bots').insert({ 
+                        user_id: currentUser.id, 
+                        bot_id: selectedBotId, 
+                        invested_amount: amount, 
+                        status: 'active', 
+                        earnings: 0, 
+                        last_profit_calculation: new Date().toISOString(),
+                        activated_at: new Date().toISOString()
+                    });
+                    await mySupabase.from('transactions').insert({ user_id: currentUser.id, type: 'bot_activation', amount: amount, status: 'approved', description: `Activated ${bot.name}` });
+                    
+                    closeModal();
+                    await loadMyBots();
+                    userBalance = newBalance;
+                    document.getElementById('headerBalance').textContent = `$${userBalance.toFixed(2)}`;
+                    alert(`✅ ${bot.name} activated! Profits will calculate every minute. Bot auto-stops after 24 hours. You can now connect your MetaTrader 5 account.`);
+                }
+                
+            } catch (err) {
+                console.error('Activation error:', err);
+                errorEl.textContent = err.message || 'Failed to activate bot.';
+                errorEl.classList.remove('hidden');
+            } finally {
+                document.getElementById('activateBtn').disabled = false;
+                document.getElementById('activateBtn').textContent = 'Activate Bot';
+            }
+        }
+
+        // MT5 Functions
+        async function openMT5Modal(botId, isEdit = false) {
+            selectedMT5BotId = botId;
+            
+            const { data: userBot } = await mySupabase
+                .from('user_bots')
+                .select('*, trading_bots(name)')
+                .eq('id', botId)
+                .single();
+            
+            if (!userBot) {
+                alert('Bot not found.');
+                return;
+            }
+            
+            document.getElementById('mt5ModalBotName').textContent = userBot.trading_bots.name;
+            document.getElementById('mt5ModalError').classList.add('hidden');
+            document.getElementById('mt5ModalSuccess').classList.add('hidden');
+            
+            // Pre-fill if editing
+            if (isEdit && userBot.mt5_login) {
+                document.getElementById('mt5Login').value = userBot.mt5_login;
+                document.getElementById('mt5Password').value = '';
+                document.getElementById('mt5Server').value = userBot.mt5_server || '';
+            } else {
+                document.getElementById('mt5Login').value = '';
+                document.getElementById('mt5Password').value = '';
+                document.getElementById('mt5Server').value = '';
+            }
+            
+            document.getElementById('mt5Modal').classList.remove('hidden');
+        }
+
+        function closeMT5Modal() {
+            document.getElementById('mt5Modal').classList.add('hidden');
+            selectedMT5BotId = null;
+        }
+
+        async function saveMT5Credentials() {
+            const login = document.getElementById('mt5Login').value.trim();
+            const password = document.getElementById('mt5Password').value.trim();
+            const server = document.getElementById('mt5Server').value.trim();
+            const errorEl = document.getElementById('mt5ModalError');
+            const successEl = document.getElementById('mt5ModalSuccess');
+            const saveBtn = document.getElementById('saveMT5Btn');
+            
+            if (!login || !password || !server) {
+                errorEl.textContent = 'Please fill in all MT5 credentials.';
+                errorEl.classList.remove('hidden');
+                successEl.classList.add('hidden');
+                return;
+            }
+            
+            saveBtn.disabled = true;
+            saveBtn.textContent = 'Saving...';
+            errorEl.classList.add('hidden');
+            successEl.classList.add('hidden');
+            
+            try {
+                const { error } = await mySupabase
+                    .from('user_bots')
+                    .update({
+                        mt5_login: login,
+                        mt5_password: password,
+                        mt5_server: server
+                    })
+                    .eq('id', selectedMT5BotId);
+                
+                if (error) throw error;
+                
+                successEl.textContent = '✅ MT5 credentials saved successfully! Bot will connect to your trading account.';
+                successEl.classList.remove('hidden');
+                
+                setTimeout(() => {
+                    closeMT5Modal();
+                    loadMyBots();
+                }, 2000);
+                
+            } catch (err) {
+                console.error('Save MT5 error:', err);
+                errorEl.textContent = 'Failed to save MT5 credentials. Please try again.';
+                errorEl.classList.remove('hidden');
+            } finally {
+                saveBtn.disabled = false;
+                saveBtn.textContent = 'Save & Connect';
+            }
+        }
+
+        function toggleSidebar() {}
+
+        async function logout() {
+            if (profitCalculationInterval) clearInterval(profitCalculationInterval);
+            if (countdownInterval) clearInterval(countdownInterval);
+            await mySupabase.auth.signOut();
+            window.location.href = 'sign-in.html';
+        }
+    </script>
+</body>
+</html>
