@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>TITAN FX TRADING</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:'Poppins',sans-serif;
+scroll-behavior:smooth;
+}
+
+body{
+background:#07111f;
+color:white;
+overflow-x:hidden;
+}
+
+nav{
+display:flex;
+justify-content:space-between;
+align-items:center;
+padding:20px 8%;
+background:#0d1b2a;
+position:sticky;
+top:0;
+z-index:1000;
+box-shadow:0 2px 10px rgba(0,0,0,.3);
+}
+
+.logo{
+font-size:30px;
+font-weight:700;
+color:#00d4ff;
+}
+
+.nav-links{
+display:flex;
+align-items:center;
+}
+
+.nav-links a{
+text-decoration:none;
+color:white;
+margin-left:20px;
+font-weight:500;
+}
+
+.login{
+padding:12px 24px;
+border:1px solid #00d4ff;
+border-radius:8px;
+color:#00d4ff !important;
+}
+
+.signup{
+padding:12px 24px;
+background:#00d4ff;
+border-radius:8px;
+color:black !important;
+font-weight:600;
+}
+
+.hero{
+padding:120px 8%;
+text-align:center;
+background:linear-gradient(135deg,#07111f,#102542);
+}
+
+.hero h1{
+font-size:60px;
+margin-bottom:20px;
+}
+
+.hero p{
+font-size:20px;
+max-width:850px;
+margin:auto;
+opacity:.85;
+line-height:1.7;
+}
+
+.hero-buttons{
+margin-top:40px;
+}
+
+.hero-buttons a{
+text-decoration:none;
+padding:15px 35px;
+border-radius:10px;
+font-weight:600;
+display:inline-block;
+margin:10px;
+}
+
+.btn-primary{
+background:#00d4ff;
+color:black;
+}
+
+.btn-secondary{
+border:1px solid white;
+color:white;
+}
+
+.section{
+padding:80px 8%;
+}
+
+.section-title{
+text-align:center;
+font-size:42px;
+margin-bottom:50px;
+}
+
+.grid{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+gap:25px;
+}
+
+.card{
+background:#102542;
+padding:25px;
+border-radius:15px;
+transition:.3s;
+border:1px solid rgba(255,255,255,.05);
+}
+
+.card:hover{
+transform:translateY(-5px);
+}
+
+.card h3{
+color:#00d4ff;
+margin-bottom:15px;
+}
+
+.plan-price{
+font-size:32px;
+font-weight:700;
+margin:15px 0;
+}
+
+.features{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+gap:25px;
+}
+
+.feature{
+background:#102542;
+padding:25px;
+border-radius:15px;
+}
+
+.about-box{
+background:#102542;
+padding:30px;
+border-radius:15px;
+line-height:1.8;
+}
+
+.contact{
+text-align:center;
+}
+
+.contact p{
+margin:10px 0;
+}
+
+footer{
+padding:40px;
+text-align:center;
+background:#0d1b2a;
+margin-top:50px;
+}
+
+footer p{
+opacity:.8;
+}
+
+@media(max-width:768px){
+
+.hero h1{
+font-size:38px;
+}
+
+.hero p{
+font-size:16px;
+}
+
+nav{
+flex-direction:column;
+gap:15px;
+}
+
+.nav-links{
+flex-wrap:wrap;
+justify-content:center;
+}
+
+}
+</style>
+</head>
+<body>
+
+<nav>
+<div class="logo">TITAN FX</div>
+<div class="nav-links">
+<a href="#markets">Markets</a>
+<a href="#bots">Bots</a>
+<a href="#plans">Plans</a>
+<a href="#about">About</a>
+<a href="#contact">Contact</a>
+
+<!-- FIXED: Changed signin.html to sign-in.html -->
+<a href="sign-in.html" class="login">Sign In</a>
+<a href="signup.html" class="signup">Sign Up</a>
+</div>
+</nav>
+
+<section class="hero">
+<h1>TITAN FX TRADING</h1>
+<p>
+Professional Forex Trading Solutions, Automated Trading Bots,
+Portfolio Management Services and Market Analysis Technology.
+Trade smarter with modern tools designed for today's markets.
+</p>
+<div class="hero-buttons">
+<a href="signup.html" class="btn-primary">Create Account</a>
+<!-- FIXED: Changed signin.html to sign-in.html -->
+<a href="sign-in.html" class="btn-secondary">Sign In</a>
+</div>
+</section>
+
+<section class="section" id="markets">
+<h2 class="section-title">Live Markets</h2>
+<div class="tradingview-widget-container">
+<div class="tradingview-widget-container__widget"></div>
+<script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-market-overview.js" async>
+{
+"colorTheme":"dark",
+"dateRange":"12M",
+"showChart":true,
+"locale":"en",
+"width":"100%",
+"height":"500",
+"tabs":[
+{
+"title":"Forex",
+"symbols":[
+{"s":"FX:EURUSD"},
+{"s":"FX:GBPUSD"},
+{"s":"FX:USDJPY"},
+{"s":"FX:AUDUSD"},
+{"s":"FX:USDCAD"}
+]
+}
+]
+}
+</script>
+</div>
+</section>
+
+<section class="section" id="bots">
+<h2 class="section-title">Trading Bots</h2>
+<div class="grid">
+<div class="card">
+<h3>TITAN Scalper AI</h3>
+<p>Focused on short-term forex opportunities across major currency pairs.</p>
+</div>
+<div class="card">
+<h3>TITAN Gold Hunter</h3>
+<p>Specialized market analysis system designed for XAU/USD trading.</p>
+</div>
+<div class="card">
+<h3>TITAN AI Trend Bot</h3>
+<p>AI-assisted trend identification and market scanning technology.</p>
+</div>
+<div class="card">
+<h3>TITAN Smart Grid Bot</h3>
+<p>Automated trade management using advanced grid methodologies.</p>
+</div>
+</div>
+</section>
+
+<section class="section" id="plans">
+<h2 class="section-title">Investment Plans</h2>
+<div class="grid">
+<div class="card">
+<h3>Starter Plan</h3>
+<div class="plan-price">$50+</div>
+<p>Suitable for individuals beginning their investment journey.</p>
+</div>
+<div class="card">
+<h3>Silver Plan</h3>
+<div class="plan-price">$500+</div>
+<p>Balanced portfolio approach with enhanced market exposure.</p>
+</div>
+<div class="card">
+<h3>Gold Plan</h3>
+<div class="plan-price">$2,000+</div>
+<p>Advanced investment strategy for experienced participants.</p>
+</div>
+<div class="card">
+<h3>VIP Plan</h3>
+<div class="plan-price">$5,000+</div>
+<p>Premium-level portfolio management and support services.</p>
+</div>
+</div>
+</section>
+
+<section class="section">
+<h2 class="section-title">Why Choose TITAN FX</h2>
+<div class="features">
+<div class="feature">
+<h3>Secure Platform</h3>
+<p>Advanced authentication and account protection systems.</p>
+</div>
+<div class="feature">
+<h3>Modern Technology</h3>
+<p>Automated trading tools and real-time market monitoring.</p>
+</div>
+<div class="feature">
+<h3>Efficient Withdrawals</h3>
+<p>Designed for smooth account management processes.</p>
+</div>
+<div class="feature">
+<h3>24/7 Support</h3>
+<p>Dedicated customer support whenever assistance is needed.</p>
+</div>
+</div>
+</section>
+
+<section class="section" id="about">
+<h2 class="section-title">About TITAN FX</h2>
+<div class="about-box">
+<p>
+TITAN FX TRADING is focused on delivering forex trading
+technology, market analysis solutions, automated trading systems,
+and portfolio management services. Our goal is to provide clients
+with access to professional-grade trading tools and market insights
+through a secure and modern digital platform.
+</p>
+</div>
+</section>
+
+<section class="section contact" id="contact">
+<h2 class="section-title">Contact Us</h2>
+<p>Email: support@titanfxtrading.com</p>
+<p>Website: www.titanfxtrading.com</p>
+<p>Available 24/7 for customer support.</p>
+</section>
+
+<footer>
+<p>© 2026 TITAN FX TRADING. All Rights Reserved.</p>
+<br>
+<p style="font-size:14px;">
+Risk Warning: Trading and investing involve risk. Past performance
+does not guarantee future results.
+</p>
+</footer>
+
+</body>
+</html>
