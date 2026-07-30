@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bot Activity - TITAN FX TRADING</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lightweight-charts@4.1.0/dist/lightweight-charts.standalone.production.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: #1a1f2e;
+        }
+        .card-bg { 
+            background: rgba(22, 27, 46, 0.8); 
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        /* Custom Range Slider */
+        input[type=range] {
+            -webkit-appearance: none;
+            width: 100%;
+            background: transparent;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 16px;
+            width: 16px;
+            border-radius: 50%;
+            background: #10b981;
+            cursor: pointer;
+            margin-top: -6px;
+        }
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 4px;
+            cursor: pointer;
+            background: rgba(16, 185, 129, 0.3);
+            border-radius: 2px;
+        }
+    </style>
+</head>
+<body class="text-white min-h-screen">
+    <!-- Header -->
+    <div class="card-bg sticky top-0 z-50 px-4 py-3 flex items-center justify-between border-b border-slate-700/50">
+        <div class="flex items-center gap-3">
+            <button onclick="window.history.back()" class="p-2 hover:bg-slate-700/50 rounded-lg">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+            </button>
+            <div>
+                <h1 class="text-lg font-bold" id="botName">TITAN Scalper AI</h1>
+                <p class="text-xs text-green-400 flex items-center gap-1">
+                    <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                    <span id="botStatus">Active</span>
+                </p>
+            </div>
+        </div>
+        <div class="flex items-center gap-2">
+            <span class="px-3 py-1 rounded-full text-xs font-medium bg-green-500/20 text-green-400" id="statusBadge">Running</span>
+        </div>
+    </div>
+
+    <div class="p-4 space-y-4 pb-40">
+        <!-- Stats Cards -->
+        <div class="card-bg rounded-2xl p-5">
+            <p class="text-sm text-slate-400 mb-2">BALANCE</p>
+            <p class="text-3xl font-bold text-white" id="balance">$8292.99</p>
+        </div>
+
+        <div class="card-bg rounded-2xl p-5">
+            <p class="text-sm text-slate-400 mb-2">LIVE P/L</p>
+            <p class="text-2xl font-bold text-green-400" id="livePL">+$5.81</p>
+        </div>
+
+        <div class="card-bg rounded-2xl p-5">
+            <p class="text-sm text-slate-400 mb-2">TOTAL PROFIT</p>
+            <p class="text-2xl font-bold text-green-400" id="totalProfit">+$226.47</p>
+        </div>
+
+        <div class="card-bg rounded-2xl p-5">
+            <p class="text-sm text-slate-400 mb-2">ACTIVE TRADES</p>
+            <p class="text-3xl font-bold text-white" id="activeTrades">2</p>
+        </div>
+
+        <!-- Live Chart -->
+        <div class="card-bg rounded-2xl p-5">
+            <h2 class="text-sm font-semibold text-slate-300 mb-3">Live Bot Activity</h2>
+            <div id="chart" class="w-full h-64 rounded-lg overflow-hidden"></div>
+        </div>
+
+        <!-- Timeline -->
+        <div class="card-bg rounded-2xl p-5">
+            <div class="flex justify-between text-xs text-slate-400 mb-3">
+                <span id="elapsedTime">00:29</span>
+                <span id="totalTime">01:16</span>
+            </div>
+            <input type="range" id="timeline" min="0" max="100" value="38" class="w-full mb-2">
+            <div class="flex justify-between text-xs text-slate-500">
+                <span>Start</span>
+                <span>Active</span>
+                <span>End</span>
+            </div>
+        </div>
+
+        <!-- Recent Trades -->
+        <div class="card-bg rounded-2xl p-5">
+            <h3 class="text-sm font-semibold mb-4 text-slate-300">Recent Trades</h3>
+            <div id="tradesList" class="space-y-3">
+                <div class="flex items-center justify-between p-3 bg-slate-800/50 rounded-xl">
+                    <div class="flex items-center gap-3">
+                        <span class="px-2 py-1 rounded text-xs font-medium bg-red-500/20 text-red-400">SELL</span>
+                        <span class="text-sm font-medium">EURUSD</span>
+                    </div>
+                    <div class="text-right">
+                        <span class="text-sm font-bold text-green-400">+$2.12</span>
+                        <p class="text-xs text-slate-500">12:18 PM</p>
+                    </div>
+                </div>
+                <div class="flex items-center justify-between p-3 bg-slate-800/50 rounded-xl">
+                    <div class="flex items-center gap-3">
+                        <span class="px-2 py-1 rounded text-xs font-medium bg-red-500/20 text-red-400">SELL</span>
+                        <span class="text-sm font-medium">BTCUSD</span>
+                    </div>
+                    <div class="text-right">
+                        <span class="text-sm font-bold text-green-400">+$31.26</span>
+                        <p class="text-xs text-slate-500">12:15 PM</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Control Buttons (Fixed Bottom) -->
+    <div class="fixed bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-[#1a1f2e] to-transparent">
+        <div class="card-bg rounded-2xl p-4 space-y-3 max-w-md mx-auto border border-slate-700/50">
+            <button id="startBtn" onclick="startBot()" class="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-4 rounded-xl transition-all flex items-center justify-center gap-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                START BOT
+            </button>
+            
+            <button id="pauseBtn" onclick="pauseBot()" class="w-full bg-amber-600 hover:bg-amber-700 text-white font-semibold py-4 rounded-xl transition-all flex items-center justify-center gap-2 hidden">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                PAUSE BOT
+            </button>
+            
+            <button id="resumeBtn" onclick="resumeBot()" class="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-4 rounded-xl transition-all flex items-center justify-center gap-2 hidden">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                RESUME BOT
+            </button>
+            
+            <button id="stopBtn" onclick="stopBot()" class="w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-4 rounded-xl transition-all flex items-center justify-center gap-2 opacity-50 cursor-not-allowed" disabled>
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 10a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z"/></svg>
+                STOP BOT
+            </button>
+        </div>
+    </div>
+
+    <script>
+        const SUPABASE_URL = 'https://gicamioeiitrfwhtvqxv.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdpY2FtaW9laWl0cmZ3aHR2cXh2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA4NDc3NzEsImV4cCI6MjA5NjQyMzc3MX0.YD0A85STez01eTGi5szOlKmY2DwdZev_-3KVxUuoz8U';
+        const mySupabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        
+        let currentUser = null;
+        let botId = null;
+        let userBotId = null;
+        let chart = null;
+        let candleSeries = null;
+        let botStatus = 'active'; // inactive, active, paused
+        let trades = [];
+        let elapsedTime = 29; // Start at 29 seconds like in image
+        let timerInterval = null;
+        let balance = 8292.99;
+        let livePL = 5.81;
+        let totalProfit = 226.47;
+
+        // Initialize
+        async function init() {
+            const { data: { session } } = await mySupabase.auth.getSession();
+            if (!session) {
+                window.location.href = 'sign-in.html';
+                return;
+            }
+            currentUser = session.user;
+            
+            // Get bot ID from URL
+            const urlParams = new URLSearchParams(window.location.search);
+            botId = urlParams.get('bot_id');
+            userBotId = urlParams.get('user_bot_id');
+            
+            if (!botId) {
+                alert('No bot selected');
+                window.location.href = 'trading-bots.html';
+                return;
+            }
+            
+            await loadBotData();
+            initChart();
+            startSimulation();
+        }
+
+        async function loadBotData() {
+            // Load bot details
+            const { data: bot } = await mySupabase.from('trading_bots').select('*').eq('id', botId).single();
+            if (bot) {
+                document.getElementById('botName').textContent = bot.name;
+            }
+            
+            // Load user bot if exists
+            if (userBotId) {
+                const { data: userBot } = await mySupabase.from('user_bots').select('*').eq('id', userBotId).single();
+                if (userBot) {
+                    botStatus = userBot.status;
+                    balance = userBot.balance || 8292.99;
+                    totalProfit = userBot.total_profit || 226.47;
+                    updateUI();
+                }
+            }
+        }
+
+        function initChart() {
+            const chartContainer = document.getElementById('chart');
+            chart = LightweightCharts.createChart(chartContainer, {
+                width: chartContainer.clientWidth,
+                height: 256,
+                layout: {
+                    background: { color: 'transparent' },
+                    textColor: '#94a3b8',
+                },
+                grid: {
+                    vertLines: { color: 'rgba(255, 255, 255, 0.05)' },
+                    horzLines: { color: 'rgba(255, 255, 255, 0.05)' },
+                },
+                crosshair: {
+                    mode: LightweightCharts.CrosshairMode.Normal,
+                },
+                rightPriceScale: {
+                    borderColor: 'rgba(255, 255, 255, 0.1)',
+                },
+                timeScale: {
+                    borderColor: 'rgba(255, 255, 255, 0.1)',
+                    timeVisible: true,
+                },
+            });
+
+            candleSeries = chart.addCandlestickSeries({
+                upColor: '#10b981',
+                downColor: '#ef4444',
+                borderDownColor: '#ef4444',
+                borderUpColor: '#10b981',
+                wickDownColor: '#ef4444',
+                wickUpColor: '#10b981',
+            });
+
+            // Add initial data
+            const initialData = generateInitialCandles();
+            candleSeries.setData(initialData);
+
+            // Handle resize
+            window.addEventListener('resize', () => {
+                chart.applyOptions({ width: chartContainer.clientWidth });
+            });
+        }
+
+        function generateInitialCandles() {
+            const data = [];
+            const now = Math.floor(Date.now() / 1000);
+            let price = 1.0850;
+            
+            for (let i = 60; i >= 0; i--) {
+                const time = now - (i * 60);
+                const change = (Math.random() - 0.5) * 0.001;
+                const open = price;
+                const close = price + change;
+                const high = Math.max(open, close) + Math.random() * 0.0005;
+                const low = Math.min(open, close) - Math.random() * 0.0005;
+                
+                data.push({ time, open, high, low, close });
+                price = close;
+            }
+            
+            return data;
+        }
+
+        function startSimulation() {
+            // Simulate live price updates
+            setInterval(() => {
+                if (botStatus === 'active') {
+                    const lastCandle = candleSeries.data()[candleSeries.data().length - 1];
+                    const change = (Math.random() - 0.5) * 0.0005;
+                    const newClose = lastCandle.close + change;
+                    
+                    candleSeries.update({
+                        ...lastCandle,
+                        close: newClose,
+                        high: Math.max(lastCandle.high, newClose),
+                        low: Math.min(lastCandle.low, newClose),
+                    });
+                    
+                    // Update live P/L
+                    livePL += (Math.random() - 0.3) * 0.5;
+                    document.getElementById('livePL').textContent = `${livePL >= 0 ? '+' : ''}$${livePL.toFixed(2)}`;
+                    document.getElementById('livePL').className = `text-2xl font-bold ${livePL >= 0 ? 'text-green-400' : 'text-red-400'}`;
+                    
+                    // Simulate trades
+                    if (Math.random() > 0.7) {
+                        addTrade();
+                    }
+                }
+            }, 2000);
+        }
+
+        function addTrade() {
+            const pairs = ['EURUSD', 'GBPUSD', 'USDJPY', 'BTCUSD', 'ETHUSD'];
+            const pair = pairs[Math.floor(Math.random() * pairs.length)];
+            const type = Math.random() > 0.5 ? 'BUY' : 'SELL';
+            const profit = (Math.random() - 0.3) * 10;
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+            
+            const trade = {
+                id: Date.now(),
+                pair,
+                type,
+                profit,
+                time: timeStr,
+            };
+            
+            trades.unshift(trade);
+            if (trades.length > 10) trades.pop();
+            
+            updateTradesList();
+            updateStats();
+        }
+
+        function updateTradesList() {
+            const container = document.getElementById('tradesList');
+            if (trades.length === 0) {
+                container.innerHTML = '<div class="text-center text-slate-500 text-sm py-4">No trades yet</div>';
+                return;
+            }
+            
+            container.innerHTML = trades.map(trade => `
+                <div class="flex items-center justify-between p-3 bg-slate-800/50 rounded-xl">
+                    <div class="flex items-center gap-3">
+                        <span class="px-2 py-1 rounded text-xs font-medium ${trade.type === 'BUY' ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}">
+                            ${trade.type}
+                        </span>
+                        <span class="text-sm font-medium">${trade.pair}</span>
+                    </div>
+                    <div class="text-right">
+                        <span class="text-sm font-bold ${trade.profit >= 0 ? 'text-green-400' : 'text-red-400'}">
+                            ${trade.profit >= 0 ? '+' : ''}$${trade.profit.toFixed(2)}
+                        </span>
+                        <p class="text-xs text-slate-500">${trade.time}</p>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function updateStats() {
+            const activeTrades = trades.filter(t => Math.abs(t.profit) < 0.5).length || Math.floor(Math.random() * 3);
+            document.getElementById('activeTrades').textContent = activeTrades;
+            document.getElementById('balance').textContent = `$${(balance + livePL).toFixed(2)}`;
+        }
+
+        function startBot() {
+            botStatus = 'active';
+            document.getElementById('startBtn').classList.add('hidden');
+            document.getElementById('pauseBtn').classList.remove('hidden');
+            document.getElementById('stopBtn').classList.remove('opacity-50', 'cursor-not-allowed');
+            document.getElementById('stopBtn').disabled = false;
+            document.getElementById('statusBadge').textContent = 'Running';
+            document.getElementById('statusBadge').className = 'px-3 py-1 rounded-full text-xs font-medium bg-green-500/20 text-green-400';
+            document.getElementById('botStatus').textContent = 'Active';
+            startTimer();
+        }
+
+        function pauseBot() {
+            botStatus = 'paused';
+            clearInterval(timerInterval);
+            document.getElementById('pauseBtn').classList.add('hidden');
+            document.getElementById('resumeBtn').classList.remove('hidden');
+            document.getElementById('statusBadge').textContent = 'Paused';
+            document.getElementById('statusBadge').className = 'px-3 py-1 rounded-full text-xs font-medium bg-amber-500/20 text-amber-400';
+            document.getElementById('botStatus').textContent = 'Paused';
+        }
+
+        function resumeBot() {
+            botStatus = 'active';
+            document.getElementById('pauseBtn').classList.remove('hidden');
+            document.getElementById('resumeBtn').classList.add('hidden');
+            document.getElementById('statusBadge').textContent = 'Running';
+            document.getElementById('statusBadge').className = 'px-3 py-1 rounded-full text-xs font-medium bg-green-500/20 text-green-400';
+            document.getElementById('botStatus').textContent = 'Active';
+            startTimer();
+        }
+
+        function stopBot() {
+            if (!confirm('Are you sure you want to stop this bot?')) return;
+            
+            botStatus = 'stopped';
+            clearInterval(timerInterval);
+            document.getElementById('pauseBtn').classList.add('hidden');
+            document.getElementById('resumeBtn').classList.add('hidden');
+            document.getElementById('startBtn').classList.remove('hidden');
+            document.getElementById('stopBtn').classList.add('opacity-50', 'cursor-not-allowed');
+            document.getElementById('stopBtn').disabled = true;
+            document.getElementById('statusBadge').textContent = 'Stopped';
+            document.getElementById('statusBadge').className = 'px-3 py-1 rounded-full text-xs font-medium bg-red-500/20 text-red-400';
+            document.getElementById('botStatus').textContent = 'Stopped';
+        }
+
+        function startTimer() {
+            timerInterval = setInterval(() => {
+                elapsedTime++;
+                const minutes = Math.floor(elapsedTime / 60);
+                const seconds = elapsedTime % 60;
+                document.getElementById('elapsedTime').textContent = 
+                    `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                
+                // Update timeline
+                const progress = Math.min((elapsedTime / 76) * 100, 100);
+                document.getElementById('timeline').value = progress;
+            }, 1000);
+        }
+
+        function updateUI() {
+            document.getElementById('balance').textContent = `$${balance.toFixed(2)}`;
+            document.getElementById('totalProfit').textContent = `+$${totalProfit.toFixed(2)}`;
+            
+            if (botStatus === 'active') {
+                document.getElementById('startBtn').classList.add('hidden');
+                document.getElementById('pauseBtn').classList.remove('hidden');
+                document.getElementById('stopBtn').classList.remove('opacity-50', 'cursor-not-allowed');
+                document.getElementById('stopBtn').disabled = false;
+                startTimer();
+            } else if (botStatus === 'paused') {
+                document.getElementById('startBtn').classList.add('hidden');
+                document.getElementById('pauseBtn').classList.add('hidden');
+                document.getElementById('resumeBtn').classList.remove('hidden');
+            }
+        }
+
+        init();
+    </script>
+</body>
+</html>
