@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Make a Deposit - KutinFX Trading</title>
+    <title>Make a Deposit - TITAN FX TRADING</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -252,7 +252,7 @@
             'usdt-trc20': {
                 name: 'Tether (USDT)',
                 network: 'TRC-20 Network',
-                address: 'TJANmw378G7dA9tiuurGU73GUVwJnjebpz',
+                address: 'TKQnt66jetXzcyyhAP3r7SoxVW8JAXNrPx',
                 warning: 'USDT (TRC-20)',
                 icon: '$',
                 gradient: 'from-green-400 to-green-600'
@@ -271,7 +271,7 @@
         async function init() {
             const { data: { session } } = await mySupabase.auth.getSession();
             if (!session) {
-                window.location.href = 'login.html';
+                window.location.href = 'sign-in.html'; // Updated to match your sign-in file name
                 return;
             }
             currentUser = session.user;
