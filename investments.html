@@ -213,7 +213,6 @@
         let activeInvestments = [];
         let countdownInterval = null;
 
-        // FIXED: Helper to parse dates safely and force UTC if timezone is missing (Fixes the earnings jumping bug)
         function parseDate(dateStr) {
             if (!dateStr) return new Date();
             const str = String(dateStr);
@@ -223,18 +222,19 @@
             return new Date(str);
         }
 
-        function calculateReturn(amount) {
-            if (amount >= 10000) {
-                return 30000;
-            } else if (amount >= 2000) {
-                return 24000;
-            } else if (amount >= 500) {
-                return 9000;
-            } else if (amount >= 100) {
-                return 2000;
-            } else {
-                return 0;
+        // FIXED: Dynamically calculate return based on the plan's daily_roi and duration_days from the database.
+        // This guarantees the return is never 0 as long as the plan has valid ROI/duration settings in your database.
+        function calculateReturn(amount, plan) {
+            if (plan && plan.daily_roi !== undefined && plan.duration_days !== undefined) {
+                const profit = amount * (plan.daily_roi / 100) * plan.duration_days;
+                return amount + profit; // Returns Total Return (Principal + Profit)
             }
+            // Fallback hardcoded tiers (only used if plan data is somehow missing)
+            if (amount >= 10000) return 30000;
+            if (amount >= 2000) return 24000;
+            if (amount >= 500) return 9000;
+            if (amount >= 100) return 2000;
+            return 0;
         }
 
         function getCrownIcon() {
@@ -290,8 +290,9 @@
                 }
 
                 container.innerHTML = allPlans.map((plan, index) => {
-                    const durationHours = 24;
-                    const expectedReturn = calculateReturn(plan.min_deposit || 0);
+                    // FIXED: Pass the plan object to calculateReturn so it uses the DB values
+                    const expectedReturn = calculateReturn(plan.min_deposit || 0, plan);
+                    const durationHours = plan.duration_days ? plan.duration_days * 24 : 24;
                     
                     return `
                     <div class="glass-card rounded-xl p-5 relative ${index === 2 ? 'border-amber-500/50 ring-1 ring-amber-500/30' : ''}">
@@ -309,7 +310,7 @@
                             </div>
                             <div class="flex justify-between">
                                 <span class="text-slate-400">Duration:</span>
-                                <span class="text-white font-medium">${durationHours} hours</span>
+                                <span class="text-white font-medium">${plan.duration_days || 30} days</span>
                             </div>
                             <div class="flex justify-between">
                                 <span class="text-slate-400">You Get:</span>
@@ -376,14 +377,15 @@
 
                 container.innerHTML = activeInvestments.map(inv => {
                     totalInvested += inv.invested_amount || 0;
-                    const plan = allPlans.find(p => p.id === inv.plan_id) || { name: 'Unknown Plan' };
-                    const expectedReturn = calculateReturn(inv.invested_amount || 0);
+                    const plan = allPlans.find(p => p.id === inv.plan_id) || {};
+                    // FIXED: Pass the plan object to calculateReturn
+                    const expectedReturn = calculateReturn(inv.invested_amount || 0, plan);
                     
                     return `
                         <div id="card-${inv.id}" class="glass-card rounded-xl p-5 border border-green-500/30">
                             <div class="flex items-center justify-between mb-3">
                                 ${getCrownIcon()}
-                                <h4 class="text-white font-semibold">${plan.name}</h4>
+                                <h4 class="text-white font-semibold">${plan.name || 'Unknown Plan'}</h4>
                                 <span class="status-badge px-2 py-1 rounded-full text-xs font-medium bg-green-500/20 text-green-400">Active</span>
                             </div>
                             <div class="space-y-2 text-sm">
@@ -434,7 +436,6 @@
                 if (inv.status !== 'active') continue;
                 
                 const endDate = parseDate(inv.end_date);
-                // FIXED: Use invested_at as the exact start time to prevent earnings jumping
                 const startDate = inv.invested_at ? parseDate(inv.invested_at) : new Date(endDate.getTime() - (24 * 60 * 60 * 1000));
                 const now = new Date();
                 const timeLeft = endDate - now;
@@ -444,7 +445,9 @@
                 
                 if (!countdownEl || !earningsEl) continue;
                 
-                const expectedReturn = calculateReturn(inv.invested_amount);
+                const plan = allPlans.find(p => p.id === inv.plan_id) || {};
+                // FIXED: Pass the plan object to calculateReturn
+                const expectedReturn = calculateReturn(inv.invested_amount, plan);
                 
                 if (timeLeft <= 0) {
                     countdownEl.textContent = "00:00:00";
@@ -468,7 +471,6 @@
                         countdownEl.classList.add('countdown-warning');
                     }
                     
-                    // FIXED: Calculate progress strictly between 0 and 1
                     const totalDuration = endDate - startDate;
                     const elapsed = now - startDate;
                     const progress = Math.min(1, Math.max(0, elapsed / totalDuration));
@@ -490,8 +492,9 @@
 
         async function completeInvestment(inv) {
             try {
-                const expectedReturn = calculateReturn(inv.invested_amount);
-                const plan = allPlans.find(p => p.id === inv.plan_id) || { name: 'Unknown Plan' };
+                const plan = allPlans.find(p => p.id === inv.plan_id) || {};
+                // FIXED: Pass the plan object to calculateReturn
+                const expectedReturn = calculateReturn(inv.invested_amount, plan);
                 
                 await mySupabase.from('user_investments').update({
                     status: 'completed',
@@ -507,7 +510,7 @@
                     type: 'earning',
                     amount: expectedReturn,
                     status: 'approved',
-                    description: `Return from ${plan.name} investment`,
+                    description: `Return from ${plan.name || 'Unknown Plan'} investment`,
                     created_at: new Date().toISOString()
                 });
                 
@@ -534,12 +537,12 @@
             selectedPlanId = planId;
             document.getElementById('modalPlanName').textContent = plan.name;
             
-            const durationHours = 24;
-            
-            document.getElementById('modalDuration').textContent = `${durationHours} hours`;
+            const durationHours = plan.duration_days ? plan.duration_days * 24 : 24;
+            document.getElementById('modalDuration').textContent = `${plan.duration_days || 30} days`;
             document.getElementById('minInvestText').textContent = `Minimum investment: $${(plan.min_deposit || 0).toLocaleString()} | Your balance: $${userBalance.toFixed(2)}`;
             
-            const expectedReturn = calculateReturn(plan.min_deposit || 0);
+            // FIXED: Pass the plan object to calculateReturn
+            const expectedReturn = calculateReturn(plan.min_deposit || 0, plan);
             document.getElementById('modalTotalReturn').textContent = `$${expectedReturn.toLocaleString()}`;
             
             document.getElementById('investAmount').min = plan.min_deposit || 0;
@@ -549,7 +552,8 @@
 
             document.getElementById('investAmount').addEventListener('input', function() {
                 const amount = parseFloat(this.value) || 0;
-                const returnAmount = calculateReturn(amount);
+                // FIXED: Pass the plan object to calculateReturn
+                const returnAmount = calculateReturn(amount, plan);
                 document.getElementById('modalTotalReturn').textContent = returnAmount > 0 ? `$${returnAmount.toLocaleString()}` : 'Enter valid amount';
             });
         }
@@ -587,7 +591,7 @@
             
             try {
                 const endDate = new Date();
-                endDate.setHours(endDate.getHours() + 24);
+                endDate.setDate(endDate.getDate() + (plan.duration_days || 30));
                 
                 const newBalance = userBalance - amount;
                 const { error: balanceError } = await mySupabase
@@ -597,7 +601,6 @@
                 
                 if (balanceError) throw balanceError;
 
-                // FIXED: Check if an investment for this plan already exists to avoid unique constraint errors
                 const { data: existingInv, error: checkError } = await mySupabase
                     .from('user_investments')
                     .select('id')
@@ -608,7 +611,6 @@
                 if (checkError) throw checkError;
 
                 if (existingInv) {
-                    // Update the existing record instead of deleting and inserting
                     const { error: updateError } = await mySupabase
                         .from('user_investments')
                         .update({
@@ -622,7 +624,6 @@
                     
                     if (updateError) throw updateError;
                 } else {
-                    // Insert new record if it doesn't exist
                     const { error: investError } = await mySupabase
                         .from('user_investments')
                         .insert({
@@ -651,8 +652,9 @@
                 userBalance = newBalance;
                 document.getElementById('headerBalance').textContent = `$${userBalance.toFixed(2)}`;
                 
-                const expectedReturn = calculateReturn(amount);
-                alert(`✅ Investment successful! You invested $${amount.toFixed(2)} in ${plan.name}. Expected return: $${expectedReturn.toLocaleString()} over 24 hours.`);
+                // FIXED: Pass the plan object to calculateReturn
+                const expectedReturn = calculateReturn(amount, plan);
+                alert(`✅ Investment successful! You invested $${amount.toFixed(2)} in ${plan.name}. Expected return: $${expectedReturn.toLocaleString()} over ${plan.duration_days || 30} days.`);
             } catch (err) {
                 console.error('Investment error details:', err);
                 errorEl.textContent = 'Failed to process investment. Please try again.';
