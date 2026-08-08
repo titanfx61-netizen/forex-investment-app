@@ -231,7 +231,6 @@
         let currentUser = null;
         let selectedCrypto = 'usdt-erc20';
 
-        // Crypto data - YOUR PAYBIS ADDRESSES
         const cryptoData = {
             'btc': {
                 name: 'Bitcoin',
@@ -276,61 +275,58 @@
             }
             currentUser = session.user;
             
-            // Check if user profile exists
-            const { data: profile, error: profileError } = await mySupabase.from('users').select('balance, first_name').eq('id', currentUser.id).single();
+            // FIX: Check if user profile exists, if not, forcefully create it to prevent foreign key errors
+            const { data: profile, error: profileError } = await mySupabase
+                .from('users')
+                .select('balance, first_name')
+                .eq('id', currentUser.id)
+                .single();
             
             if (profile) {
                 document.getElementById('userBalance').textContent = `Balance: $${(profile.balance || 0).toFixed(2)}`;
                 document.getElementById('userAvatar').textContent = (profile.first_name || 'U')[0].toUpperCase();
             } else {
-                // FIX: If the user profile doesn't exist in public.users, create it automatically.
-                // This prevents the "foreign key constraint" error when submitting deposits.
-                const { error: insertError } = await mySupabase.from('users').insert({
+                console.log("User profile missing. Creating it now to prevent database errors...");
+                const { error: insertError } = await mySupabase.from('users').upsert({
                     id: currentUser.id,
                     email: currentUser.email,
                     balance: 0,
-                    first_name: 'User'
-                });
+                    first_name: currentUser.email ? currentUser.email.split('@')[0] : 'User'
+                }, { onConflict: 'id' });
                 
-                if (!insertError) {
-                    document.getElementById('userBalance').textContent = 'Balance: $0.00';
-                    document.getElementById('userAvatar').textContent = (currentUser.email[0] || 'U').toUpperCase();
-                } else {
+                if (insertError) {
                     console.error('Failed to create user profile:', insertError);
+                } else {
+                    console.log("User profile created successfully.");
+                    document.getElementById('userBalance').textContent = 'Balance: $0.00';
+                    document.getElementById('userAvatar').textContent = (currentUser.email ? currentUser.email[0].toUpperCase() : 'U');
                 }
             }
 
-            // Initialize QR code
             generateQRCode(cryptoData[selectedCrypto].address);
         }
 
-        // Select Crypto
         function selectCrypto(crypto) {
             selectedCrypto = crypto;
             const data = cryptoData[crypto];
 
-            // Update UI
             document.querySelectorAll('.crypto-card').forEach(card => {
                 card.classList.remove('selected');
             });
             event.currentTarget.classList.add('selected');
 
-            // Update deposit details
             document.getElementById('selectedCryptoName').textContent = data.name;
             document.getElementById('selectedCryptoNetwork').textContent = data.network;
             document.getElementById('depositAddress').value = data.address;
             document.getElementById('warningCrypto').textContent = data.warning;
 
-            // Update icon
             const iconDiv = document.querySelector('#depositDetails .w-12');
             iconDiv.className = `w-12 h-12 rounded-full bg-gradient-to-br ${data.gradient} flex items-center justify-center text-white font-bold text-2xl`;
             iconDiv.textContent = data.icon;
 
-            // Regenerate QR code
             generateQRCode(data.address);
         }
 
-        // Generate QR Code
         function generateQRCode(address) {
             const qrContainer = document.getElementById('qrcode');
             qrContainer.innerHTML = '';
@@ -344,7 +340,6 @@
             });
         }
 
-        // Copy Address
         function copyAddress() {
             const address = document.getElementById('depositAddress').value;
             navigator.clipboard.writeText(address).then(() => {
@@ -355,7 +350,6 @@
             });
         }
 
-        // Submit Deposit
         async function submitDeposit() {
             const amount = parseFloat(document.getElementById('amount').value);
             const txHash = document.getElementById('txHash').value.trim();
@@ -382,7 +376,6 @@
             spinner.classList.remove('hidden');
 
             try {
-                // Build the transaction data - transaction_hash is optional
                 const transactionData = {
                     user_id: currentUser.id,
                     type: 'deposit',
@@ -392,48 +385,39 @@
                     status: 'pending'
                 };
 
-                // Only include transaction_hash if user provided one
                 if (txHash) {
                     transactionData.transaction_hash = txHash;
                 }
 
-                // Try to insert the transaction
+                console.log("Attempting to insert transaction for user_id:", currentUser.id);
+
                 const { data, error } = await mySupabase.from('transactions').insert([transactionData]);
 
-                // If error is about missing transaction_hash column, retry without it
                 if (error && error.code === 'PGRST204' && error.message.includes('transaction_hash')) {
                     console.log('transaction_hash column not found, retrying without it...');
-                    
-                    // Remove transaction_hash and retry
                     delete transactionData.transaction_hash;
                     
                     const { data: retryData, error: retryError } = await mySupabase.from('transactions').insert([transactionData]);
-                    
                     if (retryError) throw retryError;
                     
-                    // Success on retry
                     successMsg.textContent = '✅ Deposit request submitted successfully! Our team will verify your transaction shortly.';
                     successMsg.classList.remove('hidden');
                     document.getElementById('amount').value = '';
                     document.getElementById('txHash').value = '';
-                    
                     setTimeout(() => window.location.href = 'dashboard.html', 3000);
                     return;
                 }
 
-                // If there's any other error, throw it
                 if (error) throw error;
 
-                // Success on first try
                 successMsg.textContent = '✅ Deposit request submitted successfully! Our team will verify your transaction shortly.';
                 successMsg.classList.remove('hidden');
                 document.getElementById('amount').value = '';
                 document.getElementById('txHash').value = '';
-
                 setTimeout(() => window.location.href = 'dashboard.html', 3000);
+
             } catch (err) {
-                console.error(err);
-                // Show the actual error message so we know exactly why it failed
+                console.error("Deposit submission failed:", err);
                 errorMsg.textContent = 'Failed to submit deposit request: ' + (err.message || 'Unknown error. Check console for details.');
                 errorMsg.classList.remove('hidden');
             } finally {
@@ -443,7 +427,6 @@
             }
         }
 
-        // Initialize when DOM is ready
         if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', init);
         } else {
