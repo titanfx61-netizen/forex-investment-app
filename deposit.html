@@ -271,15 +271,33 @@
         async function init() {
             const { data: { session } } = await mySupabase.auth.getSession();
             if (!session) {
-                window.location.href = 'sign-in.html'; // Updated to match your sign-in file name
+                window.location.href = 'sign-in.html';
                 return;
             }
             currentUser = session.user;
             
-            const { data: profile } = await mySupabase.from('users').select('balance, first_name').eq('id', currentUser.id).single();
+            // Check if user profile exists
+            const { data: profile, error: profileError } = await mySupabase.from('users').select('balance, first_name').eq('id', currentUser.id).single();
+            
             if (profile) {
                 document.getElementById('userBalance').textContent = `Balance: $${(profile.balance || 0).toFixed(2)}`;
                 document.getElementById('userAvatar').textContent = (profile.first_name || 'U')[0].toUpperCase();
+            } else {
+                // FIX: If the user profile doesn't exist in public.users, create it automatically.
+                // This prevents the "foreign key constraint" error when submitting deposits.
+                const { error: insertError } = await mySupabase.from('users').insert({
+                    id: currentUser.id,
+                    email: currentUser.email,
+                    balance: 0,
+                    first_name: 'User'
+                });
+                
+                if (!insertError) {
+                    document.getElementById('userBalance').textContent = 'Balance: $0.00';
+                    document.getElementById('userAvatar').textContent = (currentUser.email[0] || 'U').toUpperCase();
+                } else {
+                    console.error('Failed to create user profile:', insertError);
+                }
             }
 
             // Initialize QR code
@@ -415,7 +433,7 @@
                 setTimeout(() => window.location.href = 'dashboard.html', 3000);
             } catch (err) {
                 console.error(err);
-                // FIX: Show the actual error message so we know exactly why it failed
+                // Show the actual error message so we know exactly why it failed
                 errorMsg.textContent = 'Failed to submit deposit request: ' + (err.message || 'Unknown error. Check console for details.');
                 errorMsg.classList.remove('hidden');
             } finally {
