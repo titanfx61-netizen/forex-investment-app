@@ -415,7 +415,8 @@
                 setTimeout(() => window.location.href = 'dashboard.html', 3000);
             } catch (err) {
                 console.error(err);
-                errorMsg.textContent = 'Failed to submit deposit request. Please try again.';
+                // FIX: Show the actual error message so we know exactly why it failed
+                errorMsg.textContent = 'Failed to submit deposit request: ' + (err.message || 'Unknown error. Check console for details.');
                 errorMsg.classList.remove('hidden');
             } finally {
                 btn.disabled = false;
