@@ -296,7 +296,6 @@
 
                 container.innerHTML = allPlans.map((plan, index) => {
                     const expectedReturn = calculateReturn(plan.min_deposit || 0, plan);
-                    const durationHours = plan.duration_days ? plan.duration_days * 24 : 24;
                     
                     return `
                     <div class="glass-card rounded-xl p-5 relative ${index === 2 ? 'border-amber-500/50 ring-1 ring-amber-500/30' : ''}">
@@ -314,7 +313,7 @@
                             </div>
                             <div class="flex justify-between">
                                 <span class="text-slate-400">Duration:</span>
-                                <span class="text-white font-medium">${plan.duration_days || 30} days</span>
+                                <span class="text-white font-medium">24 hours</span>
                             </div>
                             <div class="flex justify-between">
                                 <span class="text-slate-400">You Get:</span>
@@ -538,8 +537,7 @@
             selectedPlanId = planId;
             document.getElementById('modalPlanName').textContent = plan.name;
             
-            const durationHours = plan.duration_days ? plan.duration_days * 24 : 24;
-            document.getElementById('modalDuration').textContent = `${plan.duration_days || 30} days`;
+            document.getElementById('modalDuration').textContent = `24 hours`;
             document.getElementById('minInvestText').textContent = `Minimum investment: $${(plan.min_deposit || 0).toLocaleString()} | Your balance: $${userBalance.toFixed(2)}`;
             
             const expectedReturn = calculateReturn(plan.min_deposit || 0, plan);
@@ -590,7 +588,7 @@
             
             try {
                 const endDate = new Date();
-                endDate.setDate(endDate.getDate() + (plan.duration_days || 30));
+                endDate.setHours(endDate.getHours() + 24);
                 
                 const newBalance = userBalance - amount;
                 const { error: balanceError } = await mySupabase
@@ -652,7 +650,7 @@
                 document.getElementById('headerBalance').textContent = `$${userBalance.toFixed(2)}`;
                 
                 const expectedReturn = calculateReturn(amount, plan);
-                alert(`✅ Investment successful! You invested $${amount.toFixed(2)} in ${plan.name}. Expected return: $${expectedReturn.toLocaleString()} over ${plan.duration_days || 30} days.`);
+                alert(`✅ Investment successful! You invested $${amount.toFixed(2)} in ${plan.name}. Expected return: $${expectedReturn.toLocaleString()} over 24 hours.`);
             } catch (err) {
                 console.error('Investment error details:', err);
                 errorEl.textContent = 'Failed to process investment. Please try again.';
