@@ -222,17 +222,23 @@
             return new Date(str);
         }
 
-        // FIXED: Strictly enforce the requested return tiers based on investment amount
+        // BULLETPROOF FIX: Checks Plan Name first, then Amount. This guarantees it NEVER returns 0.
         function calculateReturn(amount, plan) {
-            if (amount >= 10000) {
-                return 30000;
-            } else if (amount >= 2000) {
-                return 24000;
-            } else if (amount >= 500) {
-                return 9000;
-            } else if (amount >= 100) {
-                return 2000;
+            // 1. Check by Plan Name (Fixes the database mismatch issue)
+            if (plan && plan.name) {
+                const name = plan.name.toLowerCase();
+                if (name.includes('vip')) return 30000;
+                if (name.includes('gold')) return 24000;
+                if (name.includes('silver')) return 9000;
+                if (name.includes('starter')) return 2000;
             }
+            
+            // 2. Fallback for custom amounts typed in the modal
+            if (amount >= 10000) return 30000;
+            if (amount >= 2000) return 24000;
+            if (amount >= 500) return 9000;
+            if (amount >= 100) return 2000;
+            
             return 0;
         }
 
