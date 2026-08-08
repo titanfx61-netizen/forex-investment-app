@@ -222,6 +222,13 @@
                 return;
             }
 
+            // FIX: Add file size check to prevent Supabase storage errors
+            const maxSize = 5 * 1024 * 1024; // 5MB
+            if (fileFront.size > maxSize || fileBack.size > maxSize) {
+                showError('File size exceeds the 5MB limit. Please choose smaller files.');
+                return;
+            }
+
             setLoading(true);
             document.getElementById('errorMsg').classList.add('hidden');
             document.getElementById('successMsg').classList.add('hidden');
@@ -272,7 +279,8 @@
 
             } catch (err) {
                 console.error('KYC Error:', err);
-                showError('Failed to submit verification. Please check your file size and try again.');
+                // FIX: Show the actual error message so you know exactly why it failed (e.g., missing bucket, RLS policy, etc.)
+                showError('Failed to submit verification: ' + (err.message || 'Unknown error. Check console for details.'));
             } finally {
                 setLoading(false);
             }
